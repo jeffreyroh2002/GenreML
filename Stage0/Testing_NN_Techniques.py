@@ -14,7 +14,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 df = pd.read_csv('../input_data/features_3_sec.csv')
-print(df.head())
+#print(df.head())
 
 
 #data , sr = librosa.load(audio_recording= "../input_data/features_3_sec.csv/country/country
@@ -30,6 +30,24 @@ librosa.display.specshow(stft, sr=sr, x_axis='time', y_axis='hz')
 plt.colorbar()
 
 """
+
+df = df.drop(labels='filename', axis=1)
+#print(df.head())
+
+#converting text data to numerical data. es) blues = 0, country = 1, etc
+
+class_list = df.iloc[:, -1]
+#print(class_list)
+convertor = LabelEncoder()    # maybe use one-hot encoder instead?
+y = convertor.fit_transform(class_list)   #labels (expectation) represented in integers
+
+#Scaling the Feature --> need to research more on this
+from sklearn.preprocessing import StandardScaler
+fit = StandardScaler()
+X = fit.fit_transform(np.array(df.iloc[:, :-1], dtype = float))  # 
+print(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 
 
