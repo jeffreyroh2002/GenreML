@@ -88,4 +88,3 @@ model_history = trainModel(model=cnn_model, epochs=600, optimizer='adam')
 test_loss, test_acc = cnn_model.evaluate(X_test, y_test, batch_size=120)
 print("The test Loss is :", test_loss)
 print("The Best test Accuracy is :", test_acc*100)
-
