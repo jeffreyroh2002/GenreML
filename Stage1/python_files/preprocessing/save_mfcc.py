@@ -64,6 +64,6 @@ def save_mfcc(data_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_s
 		json.dump(data, fp, indent=4)
 
         
-if __name__ == "__main__"
+if __name__ == "__main__":
     save_mfcc(DATASET_PATH, JSON_PATH, num_segments=10)
 	
