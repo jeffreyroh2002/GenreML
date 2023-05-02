@@ -34,6 +34,7 @@ def save_mfcc(data_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_s
 			dirpath_components = dirpath.split("/")
 			semantic_label = dirpath_components[-1]
 			data["mapping"].append(semantic_label)
+			print("\nProcessing{}".format(semantic_label))
 			
 			#process files for specific genre
 			for f in filenames:
@@ -52,6 +53,15 @@ def save_mfcc(data_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_s
 													   n_mfcc = n_mfcc,
 													   hop_length=hop_length)
 					mfcc = mfcc.T
+
+					#store mfcc for segment if it has the expected length
+					if len(mfcc) == expected_num_mfcc_vectors_per_segment:
+						data["mfcc"].append(mfcc.tolist())  #convert numpy array to list
+						data["labels"].append(i-1)
+						print("{}, segment:{}".format(file_path, s))
+						
+	with open(json_path, "w") as fp:
+		json.dump(data, fp, indent=4)
 
 			
 			
