@@ -3,8 +3,10 @@ import os
 import math
 import librosa
 
+
 DATASET_PATH = "../../audio_file/raw_imported/genre_dataset_reduced"
-JSON_PATH = "data.json"
+JSON_FILE_NAME = "short_dataset.json"
+JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
 SAMPLE_RATE = 22050
 DURATION = 30 # measured in seconds for GTZAN Dataset
