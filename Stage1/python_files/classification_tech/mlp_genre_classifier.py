@@ -2,17 +2,30 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.utils.multiclass import unique_labels
 import tensorflow.keras as keras
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 import pickle
 import os
 
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/short_dataset.json"
-SAVE_MODEL = False
-BUILD_CM = True
+SAVE_MODEL = True
+SAVE_HM = True
+NEWDIR_PATH = "../../results/may4-testing"
+NEWDIR_NAME = "may4-testing"
+
+#create new directory in results if model or hm is saved
+if (SAVE_MODEL or SAVE_HM == True):
+    os.makedirs(NEWDIR_PATH, exist_ok=True)
 
 MODEL_NAME = "model_pickle"
-PICKLE_PATH = "../../saved_models/{model_name}".format(model_name = MODEL_NAME)
+HM_NAME = "heatmap.png"
+
+PICKLE_PATH = "{newdir_path}{model_name}".format(newdir_path=NEWDIR_PATH, model_name=MODEL_NAME)
+HM_PATH = "{newdir_path}{hm_name}".format(newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
 
 
 def load_data(data_path):
@@ -27,6 +40,8 @@ def load_data(data_path):
     print("Data succesfully loaded!")
 
     return  X, y
+
+
 
 
 if __name__ == "__main__":
@@ -76,9 +91,19 @@ if __name__ == "__main__":
 	    os.rename(MODEL_NAME, PICKLE_PATH)
 	    print("File {model} moved to {path}".format(model = MODEL_NAME, path = PICKLE_PATH))
 
-    if (BUILD_CM == True):
+    if (SAVE_HM == True):
         #extracting predictions of X_test
         prediction = model.predict(X_test)
-        y_pred = np.argmax(prediction)
-        confusion_matrix(y_test, y_pred)
-        print(confusion_matrix)
+        y_pred = np.argmax(prediction, axis=1)
+        cm = confusion_matrix(y_test, y_pred)
+        #print(cm)
+
+        labels = unique_labels(y_test)
+        column = [f'Predicted {label}' for label in labels]
+        indices = [f'Actual {label}' for label in labels]
+        table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
+        hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
+        plt.savefig(HM_NAME)
+        os.rename(HM_NAME, HM_PATH)
+        #print(hm)
+        print("heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
