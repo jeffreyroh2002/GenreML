@@ -2,9 +2,15 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
+import pickle
+import os
 
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/short_dataset.json"
+SAVE_MODEL = True
+MODEL_NAME = "model_pickle"
+PICKLE_PATH = "../../saved_models/{model_name}".format(model_name = MODEL_NAME)
+
 
 def load_data(data_path):
 
@@ -59,4 +65,15 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100)
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
+	
+	#extracting predictions of X_test
+    prediction = model.predict(X_test)
+    X_pred = np.argmax(prediction[0])
+    print('X_pred = ',X_pred)
+	
+    if (SAVE_MODEL == True):
+	    with open(MODEL_NAME,'wb') as f:
+	        pickle.dump(model, f)
+	    os.rename(MODEL_NAME, PICKLE_PATH)
+	    print("File {model} moved to {path}".format(model = MODEL_NAME, path = PICKLE_PATH))
