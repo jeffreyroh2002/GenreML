@@ -24,9 +24,8 @@ if (SAVE_MODEL or SAVE_HM == True):
 MODEL_NAME = "model_pickle"
 HM_NAME = "heatmap.png"
 
-PICKLE_PATH = "{newdir_path}{model_name}".format(newdir_path=NEWDIR_PATH, model_name=MODEL_NAME)
-HM_PATH = "{newdir_path}{hm_name}".format(newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
-
+#PICKLE_PATH = "{newdir_path}{model_name}".format(newdir_path=NEWDIR_PATH, model_name=MODEL_NAME)
+#HM_PATH = "{newdir_path}{hm_name}".format(newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
 
 def load_data(data_path):
 
@@ -88,7 +87,7 @@ if __name__ == "__main__":
     if (SAVE_MODEL == True):
 	    with open(MODEL_NAME,'wb') as f:
 	        pickle.dump(model, f)
-	    os.rename(MODEL_NAME, PICKLE_PATH)
+	    os.rename(MODEL_NAME, NEWDIR_PATH)
 	    print("File {model} moved to {path}".format(model = MODEL_NAME, path = PICKLE_PATH))
 
     if (SAVE_HM == True):
@@ -104,6 +103,6 @@ if __name__ == "__main__":
         table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
         hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
         plt.savefig(HM_NAME)
-        os.rename(HM_NAME, HM_PATH)
+        os.rename(HM_NAME, NEWDIR_PATH)
         #print(hm)
         print("heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
