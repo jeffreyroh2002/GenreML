@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # train model
     history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
-	
+    
     if (SAVE_MODEL == True):
         model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
         print("Model saved to disk at: ", os.path.join(NEWDIR_PATH, MODEL_NAME))
@@ -112,17 +112,49 @@ if __name__ == "__main__":
         #Outputing graphs for Accuracy
         plt.figure()
         plt.plot(history.history['accuracy'])
-        plt.title('model accuracy')
+        plt.plot(history.history['val_accuracy'])
+        plt.title('model train_accuracy vs val_accuracy')
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
-        plt.legend(['train'], loc='upper left')
+        plt.legend(['train','val'], loc='upper left')
         plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
         
         #Outputing graphs for Loss
         plt.figure()
         plt.plot(history.history['loss'])
-        plt.title('model loss')
+        plt.plot(history.history['val_loss'])
+        plt.title('model train_loss vs val_loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
-        plt.legend(['train'], loc='upper left')
+        plt.legend(['train','val'], loc='upper left')
         plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
+
+        
+        """
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
+        train_acc = history.history['accuracy']
+        val_acc = history.history['val_accuracy']
+        xc = range(100)
+
+        plt.figure(1, figsize=(7,5))
+        plt.plot(xc,train_loss)
+        plt.plot(xc, val_loss)
+        plt.xlabel('num of epochs')
+        plt.ylabel('loss')
+        plt.title('train_loss vs val_loss')
+        plt.grid(True)
+        plt.legend(['train','val'])
+        plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
+
+        plt.figure(2, figsize=(7,5))
+        plt.plot(xc,train_acc)
+        plt.plot(xc, val_acc)
+        plt.xlabel('num of epochs')
+        plt.ylabel('accuracy')
+        plt.title('train_acc vs val_acc')
+        plt.grid(True)
+        plt.legend(['train','val'])
+        plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
+        """
+
