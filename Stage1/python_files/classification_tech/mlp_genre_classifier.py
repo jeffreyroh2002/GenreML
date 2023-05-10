@@ -93,68 +93,39 @@ if __name__ == "__main__":
         print("Model saved to disk at: ", os.path.join(NEWDIR_PATH, MODEL_NAME))
 
     if (SAVE_HM == True):
+        plt.figure()
+        
         #extracting predictions of X_test
         prediction = model.predict(X_test)
         y_pred = np.argmax(prediction, axis=1)
-        cm = confusion_matrix(y_test, y_pred)
-        #print(cm)
-
+        #cm = confusion_matrix(y_test, y_pred)
+        
         labels = unique_labels(y_test)
         column = [f'Predicted {label}' for label in labels]
         indices = [f'Actual {label}' for label in labels]
         table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
         hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
-        plt.figure()
+        
         plt.savefig(os.path.join(NEWDIR_PATH, HM_NAME))
         #print(hm)
         print("heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
         
-        #Outputing graphs for Accuracy
-        plt.figure()
-        plt.plot(history.history['accuracy'])
-        plt.plot(history.history['val_accuracy'])
-        plt.title('model train_accuracy vs val_accuracy')
-        plt.ylabel('accuracy')
-        plt.xlabel('epoch')
-        plt.legend(['train','val'], loc='upper left')
-        plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
+    #Outputing graphs for Accuracy
+    plt.figure()
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model train_accuracy vs val_accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train','val'], loc='upper left')
+    plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
         
-        #Outputing graphs for Loss
-        plt.figure()
-        plt.plot(history.history['loss'])
-        plt.plot(history.history['val_loss'])
-        plt.title('model train_loss vs val_loss')
-        plt.ylabel('loss')
-        plt.xlabel('epoch')
-        plt.legend(['train','val'], loc='upper left')
-        plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
-
-        
-        """
-        train_loss = history.history['loss']
-        val_loss = history.history['val_loss']
-        train_acc = history.history['accuracy']
-        val_acc = history.history['val_accuracy']
-        xc = range(100)
-
-        plt.figure(1, figsize=(7,5))
-        plt.plot(xc,train_loss)
-        plt.plot(xc, val_loss)
-        plt.xlabel('num of epochs')
-        plt.ylabel('loss')
-        plt.title('train_loss vs val_loss')
-        plt.grid(True)
-        plt.legend(['train','val'])
-        plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
-
-        plt.figure(2, figsize=(7,5))
-        plt.plot(xc,train_acc)
-        plt.plot(xc, val_acc)
-        plt.xlabel('num of epochs')
-        plt.ylabel('accuracy')
-        plt.title('train_acc vs val_acc')
-        plt.grid(True)
-        plt.legend(['train','val'])
-        plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
-        """
-
+    #Outputing graphs for Loss
+    plt.figure()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model train_loss vs val_loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train','val'], loc='upper left')
+    plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
