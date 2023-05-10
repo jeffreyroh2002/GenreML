@@ -11,15 +11,15 @@ import matplotlib.pyplot as plt
 import os
 
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/short_dataset.json"
+DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
 SAVE_MODEL = True
 SAVE_HM = True
-NEWDIR_PATH = "../../results/may4-testing"
-NEWDIR_NAME = "may4-testing"
+NEWDIR_NAME = "0510-testing"
 
 #create new directory in results if model or hm is saved
 if SAVE_MODEL or SAVE_HM:
-    os.makedirs(NEWDIR_PATH, exist_ok=True)
+    NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+    #os.makedirs(NEWDIR_PATH, exist_ok=True)
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
