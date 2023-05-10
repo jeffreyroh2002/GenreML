@@ -24,6 +24,10 @@ if SAVE_MODEL or SAVE_HM:
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
 
+#Accuracy and Loss Graph Names
+A_PLOT_NAME = 'accuracy.png'
+L_PLOT_NAME = 'loss.png'
+
 #PICKLE_PATH = "{newdir_path}{model_name}".format(newdir_path=NEWDIR_PATH, model_name=MODEL_NAME)
 #HM_PATH = "{newdir_path}{hm_name}".format(newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
 
@@ -100,6 +104,25 @@ if __name__ == "__main__":
         indices = [f'Actual {label}' for label in labels]
         table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
         hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
+        plt.figure()
         plt.savefig(os.path.join(NEWDIR_PATH, HM_NAME))
         #print(hm)
         print("heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
+        
+        #Outputing graphs for Accuracy
+        plt.figure()
+        plt.plot(history.history['accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
+        plt.savefig(os.path.join(NEWDIR_PATH, A_PLOT_NAME))
+        
+        #Outputing graphs for Loss
+        plt.figure()
+        plt.plot(history.history['loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train'], loc='upper left')
+        plt.savefig(os.path.join(NEWDIR_PATH, L_PLOT_NAME))
