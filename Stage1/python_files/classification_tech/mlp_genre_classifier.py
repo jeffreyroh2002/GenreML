@@ -87,6 +87,13 @@ if __name__ == "__main__":
 
     # train model
     history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
+    print("Finished Training Model!")
+    
+    """
+    val_loss, val_acc = model.evaluate(x_test, y_test)
+    print("Valdiation Loss: ", val_loss)
+    print("Valdiation Accuracy: ", val_acc)
+    """
     
     if (SAVE_MODEL == True):
         model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
