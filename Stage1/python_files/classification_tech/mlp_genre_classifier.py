@@ -7,19 +7,17 @@ import tensorflow.keras as keras
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-#import pickle
 import os
 
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
 SAVE_MODEL = True
 SAVE_HM = True
-NEWDIR_NAME = "0510-testing"
+NEWDIR_NAME = "0514-testing"
 
 #create new directory in results if model or hm is saved
 if SAVE_MODEL or SAVE_HM:
     NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
-    #os.makedirs(NEWDIR_PATH, exist_ok=True)
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -27,9 +25,6 @@ HM_NAME = "heatmap.png"
 #Accuracy and Loss Graph Names
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
-
-#PICKLE_PATH = "{newdir_path}{model_name}".format(newdir_path=NEWDIR_PATH, model_name=MODEL_NAME)
-#HM_PATH = "{newdir_path}{hm_name}".format(newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
 
 def load_data(data_path):
 
@@ -43,8 +38,6 @@ def load_data(data_path):
     print("Data succesfully loaded!")
 
     return  X, y
-
-
 
 
 if __name__ == "__main__":
@@ -89,11 +82,11 @@ if __name__ == "__main__":
     history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
     print("Finished Training Model!")
     
-    """
-    val_loss, val_acc = model.evaluate(x_test, y_test)
+    #printing val loss and accuracy
+    val_loss, val_acc = model.evaluate(X_test, y_test)
     print("Valdiation Loss: ", val_loss)
     print("Valdiation Accuracy: ", val_acc)
-    """
+    
     
     if (SAVE_MODEL == True):
         model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
@@ -114,7 +107,6 @@ if __name__ == "__main__":
         hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
         
         plt.savefig(os.path.join(NEWDIR_PATH, HM_NAME))
-        #print(hm)
         print("heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
         
     #Outputing graphs for Accuracy
