@@ -12,8 +12,8 @@ import os
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
-SAVE_MODEL = True
-SAVE_HM = True
+SAVE_MODEL = False
+SAVE_HM = False
 
 #OUTPUT DIR/FILE NAMES
 NEWDIR_NAME = "cnn-0514-testing"
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=150, verbose=0)
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=150, verbose=1)
     print("Finished Training Model!")
     
     #printing val loss and accuracy
