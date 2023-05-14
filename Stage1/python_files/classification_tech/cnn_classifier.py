@@ -9,22 +9,25 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 
+####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
 SAVE_MODEL = True
 SAVE_HM = True
-NEWDIR_NAME = "cnn-0514-testing"
 
-#create new directory in results if model or hm is saved
-if SAVE_MODEL or SAVE_HM:
-    NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+#OUTPUT DIR/FILE NAMES
+NEWDIR_NAME = "cnn-0514-testing"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
-
-#Accuracy and Loss Graph Names
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
+
+#create new dr in results dir for results
+NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+os.makedirs(NEWDIR_PATH)
+
+####################################
 
 def load_data(data_path):
 
@@ -40,7 +43,7 @@ def load_data(data_path):
     return  X, y
 
 def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
-    
+
     #Outputing graphs for Accuracy
     plt.figure()
     plt.plot(history.history['accuracy'])
@@ -61,7 +64,7 @@ def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_
     plt.legend(['train','val'], loc='upper left')
     plt.savefig(os.path.join(newdir_path, l_plot_name))
     
-def get_heatmap(model, X_test, y_test, newdir_path=NEWDIR_PATH, hm_name=HM_NAME):
+def get_heatmap(model, X_test, y_test, newdir_path, hm_name):
     
     plt.figure()
     
@@ -197,4 +200,4 @@ if __name__ == "__main__":
 
     # output heatmap
     if (SAVE_HM == True):
-        get_heatmap(model, X_test, y_test, newdir_path=NEWDIR_PATH, hm_name=HM_NAME)
+        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME)
