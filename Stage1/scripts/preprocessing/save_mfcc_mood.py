@@ -4,7 +4,7 @@ import math
 import librosa
 
 
-DATASET_PATH = "../../audio_file/raw_imported/mood_soundtracks/mp3_files"
+DATASET_PATH = "../../audio_file/raw_imported/mood_soundtracks_wav"
 JSON_FILE_NAME = "mood_10sec.json"
 JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
