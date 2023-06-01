@@ -11,12 +11,12 @@ import os
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/mood_soundtracks0518.json"
-SAVE_MODEL = False
-SAVE_HM = False
+DATA_PATH = "../../audio_file/preprocessed/mood_10sec.json"
+SAVE_MODEL = True
+SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "mood_cnn-0518-testing"
+NEWDIR_NAME = "mood_cnn-0601-testing"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -129,7 +129,7 @@ def build_model(input_shape):
     model.add(keras.layers.Dropout(0.3))
 
     # output layer
-    model.add(keras.layers.Dense(10, activation='softmax'))
+    model.add(keras.layers.Dense(12, activation='softmax'))
 
     return model
 
