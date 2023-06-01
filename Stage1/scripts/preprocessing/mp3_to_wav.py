@@ -2,8 +2,8 @@ import os
 import subprocess
 
 # Input and output directories
-input_dir = '../../Stage1/audio_file/raw_imported/mood_soundtracks/mp3_files'
-output_dir = '../../Stage1/audio_file/raw_imported/mood_soundtracks_wav'
+input_dir = '../../audio_file/raw_imported/mood_soundtracks/mp3_files'
+output_dir = '../../audio_file/raw_imported/mood_soundtracks_wav'
 
 # Recursively traverse the directory tree
 for root, dirs, files in os.walk(input_dir):
