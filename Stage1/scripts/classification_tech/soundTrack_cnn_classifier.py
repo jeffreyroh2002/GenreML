@@ -16,18 +16,22 @@ SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "testing_labels"
+NEWDIR_NAME = "mood_cnn-0603-150epochs"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
 
+# Hyperparameters
+LEARNING_RATE = 0.0001
+EPOCHS = 150
+
+####################################
+
 #create new dr in results dir for results
 NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
 os.makedirs(NEWDIR_PATH)
-
-####################################
 
 def load_data(data_path):
 
@@ -164,7 +168,7 @@ if __name__ == "__main__":
     model = build_model(input_shape)
     
         # compile model
-    optimiser = keras.optimizers.Adam(learning_rate=0.0001)
+    optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
     model.compile(optimizer=optimiser,
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
@@ -172,7 +176,7 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=150, verbose=1)
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=EPOCHS, verbose=1)
     print("Finished Training Model!")
     
     #printing val loss and accuracy
