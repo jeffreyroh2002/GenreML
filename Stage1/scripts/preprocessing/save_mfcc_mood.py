@@ -4,12 +4,12 @@ import math
 import librosa
 
 
-DATASET_PATH = "../../audio_file/raw_imported/mood_soundtracks_wav"
-JSON_FILE_NAME = "mood_10sec.json"
+DATASET_PATH = "../../audio_file/raw_imported/irmas_instrument/training/IRMAS-TrainingData"
+JSON_FILE_NAME = "irmas_noVoice_3sec.json"
 JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
 SAMPLE_RATE = 22050
-DURATION = 10 # measured in seconds for GTZAN Dataset
+DURATION = 3 # measured in seconds for GTZAN Dataset
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
 
 def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_segments=5):
@@ -67,5 +67,5 @@ def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, nu
 
         
 if __name__ == "__main__":
-    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=10)
+    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=1)
 	

@@ -9,7 +9,7 @@ def unzip_file(file_path, extract_dir):
 
 
 def main():
-    zip_file = "IRMAS-TestingData-Part3.zip"
+    zip_file = "IRMAS-TestingData-Part1.zip"
     extract_dir = "../../audio_file/raw_imported/irmas_instrument/testing"
     unzip_file(zip_file, extract_dir)
 
