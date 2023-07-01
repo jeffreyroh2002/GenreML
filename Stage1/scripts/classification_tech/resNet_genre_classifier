@@ -36,8 +36,11 @@ def get_model():
         model.add(keras.layers.AveragePooling2D(pool_size = (2,4), strides = 2, padding = "same"))
 
         prev_filters = 32
-          for num_filters in [32] * 3 + [64] * 4 + [128] * 6 + [256] * 3:
-            strides = 1 if num_filters == prev_filters else 2
+        for num_filters in [32, 32, 32, 64, 64, 64, 64, 128, 128, 128, 128, 128, 128, 256, 256, 256]:
+            if (num_filters == prev_filters):
+                strides = 1
+            else:
+                strides = 2
             model.add(RULayer(num_filters, (2, 5), strides))
             prev_filters = num_filters
             
