@@ -14,6 +14,7 @@ import tensorflow
 CORRUPT_IDX_PATH = "/workspace/MusicML/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
 PATH = "/workspace/MusicML/Stage1/audio_file/preprocessed/GTZAN_features"
 
+os.makedirs(PATH)
 
 def feature_extraction(bad_index, audio_paths, audio_label):
     file_num = len(audio_paths)

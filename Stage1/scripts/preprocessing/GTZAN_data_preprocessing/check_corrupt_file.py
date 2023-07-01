@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import json
 
 PATH = "/workspace/MusicML/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
-DIR_NAME = "/workspace/MusicML/Stage1/audio_file/raw_imported/genres_original"
+DIR_NAME = "/workspace/MusicML2/Stage1/audio_file/raw_imported/Data/genres_original"
 
 
 def pre_setting():
@@ -35,12 +35,12 @@ def pre_setting():
 
 def check_audio_file(audio_paths):
     # Create empty arrays to save the features
-    AllSpec = np.empty([100, 1025, 1293])
-    AllMel = np.empty([100, 128, 1293])
-    AllMfcc = np.empty([100, 10, 1293])
-    AllZcr = np.empty([100, 1293])
-    AllCen = np.empty([100, 1293])
-    AllChroma = np.empty([100, 12, 1293])
+    AllSpec = np.empty([1000, 1025, 1293])
+    AllMel = np.empty([1000, 128, 1293])
+    AllMfcc = np.empty([1000, 10, 1293])
+    AllZcr = np.empty([1000, 1293])
+    AllCen = np.empty([1000, 1293])
+    AllChroma = np.empty([1000, 12, 1293])
 
     print("2")
     count = 0
