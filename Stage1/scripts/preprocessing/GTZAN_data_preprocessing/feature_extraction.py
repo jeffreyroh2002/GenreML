@@ -11,8 +11,8 @@ import librosa.display
 import json
 import tensorflow
 
-CORRUPT_IDX_PATH = "/workspace/MusicML/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
-PATH = "/workspace/MusicML/Stage1/audio_file/preprocessed/GTZAN_features"
+CORRUPT_IDX_PATH = "/workspace/MusicML3/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
+PATH = "/workspace/MusicML3/Stage1/audio_file/preprocessed/GTZAN_features"
 
 os.makedirs(PATH)
 

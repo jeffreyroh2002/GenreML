@@ -7,8 +7,8 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import json
 
-PATH = "/workspace/MusicML2/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
-DIR_NAME = "/workspace/MusicML2/Stage1/audio_file/raw_imported/GTZAN_full/genres_original"
+PATH = "/workspace/MusicML3/Stage1/audio_file/preprocessed/corrupted_file_idx.npz"
+DIR_NAME = "/workspace/MusicML3/Stage1/audio_file/raw_imported/GTZAN_30SongsEach/genres_original"
 
 def pre_setting():
     # Save audio paths and labels
