@@ -160,6 +160,7 @@ def predict(model, X, y):
     :param y (int): Target
     """
     # add a dimension to input data for sample - model.predict() expects a 4d array in this case
+
     X = X[np.newaxis, ...] # array shape (1, 130, 13, 1)
 
     # perform prediction
@@ -170,6 +171,7 @@ def predict(model, X, y):
 
     print("Target: {}, Predicted label: {}".format(y, predicted_index))
 
+    
 if __name__ == "__main__":
     # create train, val, test sets
     X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
@@ -203,6 +205,7 @@ if __name__ == "__main__":
     
     print("Finished Training Model!")
 
+    """
     # Print validation loss and accuracy
     val_loss, val_acc = model.evaluate(X_validation, y_validation)
     print("Validation Loss:", val_loss)
@@ -220,7 +223,7 @@ if __name__ == "__main__":
     y_to_predict = y_test[10]
 
     # Predict sample
-    predict(model, X_to_predict, y_to_predict)
+    #predict(model, X_to_predict, y_to_predict)
 
     # Save model
     if SAVE_MODEL:
@@ -230,3 +233,4 @@ if __name__ == "__main__":
     # Output heatmap
     if SAVE_HM:
         get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME, label_list)
+    """
