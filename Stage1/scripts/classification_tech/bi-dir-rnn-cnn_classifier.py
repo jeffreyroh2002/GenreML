@@ -117,16 +117,16 @@ def prepare_datasets(test_size, validation_size):
 def create_cnn(input_shape):
     cnn_model = keras.Sequential()
 
-    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape, padding='same'))
-    cnn_model.add(keras.layers.MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
+    cnn_model.add(keras.layers.MaxPooling2D((3, 3), strides=(2, 2), padding='same'))
     cnn_model.add(keras.layers.BatchNormalization())
 
-    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'))
-    cnn_model.add(keras.layers.MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu'))
+    cnn_model.add(keras.layers.MaxPooling2D((3, 3), strides=(2, 2), padding='same'))
     cnn_model.add(keras.layers.BatchNormalization())
 
-    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same'))
-    cnn_model.add(keras.layers.MaxPooling2D((2, 2), strides=(2, 2), padding='same'))
+    cnn_model.add(keras.layers.Conv2D(32, (3, 3), activation='relu'))
+    cnn_model.add(keras.layers.MaxPooling2D((3, 3), strides=(2, 2), padding='same'))
     cnn_model.add(keras.layers.BatchNormalization())
 
     cnn_model.add(keras.layers.Flatten())
