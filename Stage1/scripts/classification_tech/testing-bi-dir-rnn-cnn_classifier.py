@@ -54,25 +54,26 @@ def prepare_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
 
-    # Create a dictionary to map label names to numeric values
-    label_to_index = {label: index for index, label in enumerate(label_list)}
-    # Reverse the mapping to get index to label
-    index_to_label = {index: label for label, index in label_to_index.items()}
-
-    # Convert label names to numeric values
-    y = np.array([label_to_index[label] for label in y])
-
-    # Calculate the number of classes
-    num_classes = len(label_list)
-
     # create train, validation, and test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
-    # Rest of the code...
+    """
+    # add an axis to input sets (CNN requires 3D array)
+    X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
+    X_validation = X_validation[..., np.newaxis]
+    X_test = X_test[..., np.newaxis]
+    """
+    
+    # Print the shape and dimensions of the input data
+    print("X_train shape:", X_train.shape)    
+    print("X_validation shape:", X_validation.shape)
+    print("X_test shape:", X_test.shape)
+    print("y_train shape:", y_train.shape)
+    print("y_validation shape:", y_validation.shape)
+    print("y_test shape:", y_test.shape)
 
-    return X_train, X_validation, X_test, y_train, y_validation, y_test, num_classes
-
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
 # Define the CNN model
 def create_cnn(input_shape):
@@ -94,17 +95,27 @@ def create_cnn(input_shape):
     return cnn_model
 
 # Define the bi-directional RNN model
-def create_rnn(input_shape, batch_size):
+def create_rnn(input_shape):
+    # build network topology
     rnn_model = keras.Sequential()
-    rnn_model.add(keras.layers.GRU(128, return_sequences=True, stateful=True, batch_input_shape=(batch_size,) + input_shape))
-    rnn_model.add(keras.layers.GRU(128, return_sequences=True, stateful=True))
-    rnn_model.add(keras.layers.GRU(128, stateful=True))
+
+    # 2 LSTM layers
+    rnn_model.add(keras.layers.LSTM(64, input_shape=input_shape, return_sequences=True))
+    rnn_model.add(keras.layers.LSTM(64))
+
+    # dense layer
+    rnn_model.add(keras.layers.Dense(64, activation='relu'))
+    rnn_model.add(keras.layers.Dropout(0.3))
+
+    # output layer
+    rnn_model.add(keras.layers.Dense(10, activation='softmax'))
     return rnn_model
 
+
 # Define the combined model
-def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, batch_size):
+def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = create_cnn(cnn_input_shape)
-    rnn_model = create_rnn(rnn_input_shape, batch_size)
+    rnn_model = create_rnn(rnn_input_shape)
 
     combined_model = keras.Sequential()
     combined_model.add(keras.layers.concatenate([cnn_model.output, rnn_model.output]))
@@ -114,21 +125,42 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, batch_s
     return combined_model
 
 
+def predict(model, X, y):
+    """Predict a single sample using the trained model
+
+    :param model: Trained classifier
+    :param X: Input data
+    :param y (int): Target
+    """
+    # add a dimension to input data for sample - model.predict() expects a 4d array in this case
+
+    X = X[np.newaxis, ...] # array shape (1, 130, 13, 1)
+
+    # perform prediction
+    prediction = model.predict(X)
+
+    # get index with max value
+    predicted_index = np.argmax(prediction, axis=1)
+
+    print("Target: {}, Predicted label: {}".format(y, predicted_index))
+
+    
 if __name__ == "__main__":
     # create train, val, test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test, num_classes = prepare_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
 
     # Set random seed for reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    cnn_input_shape = (X_train.shape[1], X_train.shape[2], 1)  # Assumes input audio features of shape (num_timesteps, num_features)
+    cnn_input_shape = (X_train.shape[1], X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
     rnn_input_shape = (X_train.shape[1], X_train.shape[2])
-    batch_size = 32  # Specify the batch size
-
+    
+    num_classes = 9  # Number of music genres
+    
     # Create the combined model
-    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, batch_size)
+    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
 
     optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
@@ -145,4 +177,3 @@ if __name__ == "__main__":
                         verbose=1)
     
     print("Finished Training Model!")
-
