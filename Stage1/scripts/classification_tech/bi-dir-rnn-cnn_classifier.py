@@ -139,6 +139,7 @@ def create_rnn(input_shape):
     rnn_model.add(keras.layers.Bidirectional(keras.layers.GRU(128)))
     return rnn_model
 
+
 # Define the combined model
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = create_cnn(cnn_input_shape)
