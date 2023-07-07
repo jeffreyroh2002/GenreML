@@ -50,7 +50,7 @@ def load_data(data_path):
 
     return X, y, label_list
 
-def prepare_datasets(test_size, validation_size):
+def prepare_cnn_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
 
@@ -58,20 +58,22 @@ def prepare_datasets(test_size, validation_size):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
-    """
+    
     # add an axis to input sets (CNN requires 3D array)
     X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
-    """
+
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
     
-    # Print the shape and dimensions of the input data
-    print("X_train shape:", X_train.shape)    
-    print("X_validation shape:", X_validation.shape)
-    print("X_test shape:", X_test.shape)
-    print("y_train shape:", y_train.shape)
-    print("y_validation shape:", y_validation.shape)
-    print("y_test shape:", y_test.shape)
+def prepare_rnn_datasets(test_size, validation_size):
+
+    # load data
+    X, y, label_list = load_data(DATA_PATH)
+
+    # create train, validation, and test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
@@ -116,11 +118,25 @@ def create_rnn(input_shape):
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = create_cnn(cnn_input_shape)
     rnn_model = create_rnn(rnn_input_shape)
+    
+    merged = keras.layers.Concatenate()([cnn_model.output,rnn_model.output])
 
-    combined_model = keras.Sequential()
+    z = keras.layers.Dense(128, activation="relu")(merged)
+    z = keras.layers.Dense(num_classes, activation='softmax')
+    
+    combined_model = keras.Model(inputs=[cnn_model.input,rnn_model.input], outputs=z)
+    
+    combined_model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+    
+    """
     combined_model.add(keras.layers.concatenate([cnn_model.output, rnn_model.output]))
     combined_model.add(keras.layers.Dense(128, activation='relu'))
     combined_model.add(keras.layers.Dense(num_classes, activation='softmax'))
+    
+    combined_model = keras.Sequential()
+    """
 
     return combined_model
 
@@ -147,21 +163,26 @@ def predict(model, X, y):
     
 if __name__ == "__main__":
     # create train, val, test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
+    cnn_X_train, cnn_X_validation, cnn_X_test, cnn_y_train, cnn_y_validation, cnn_y_test, cnn_label_list = prepare_cnn_datasets(0.25, 0.2)
+    rnn_X_train, rnn_X_validation, rnn_X_test, rnn_y_train, rnn_y_validation, rnn_y_test, rnn_label_list = prepare_rnn_datasets(0.25, 0.2)
 
     # Set random seed for reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    cnn_input_shape = (X_train.shape[1], X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
-    rnn_input_shape = (X_train.shape[1], X_train.shape[2])
+    cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
+    rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
     
     num_classes = 9  # Number of music genres
     
+    print("0")
+    
     # Create the combined model
     model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
-
+    
+    print("1")
+    
     optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
     # Compile the model
@@ -169,11 +190,12 @@ if __name__ == "__main__":
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 
+    print("2")
     # Print the model summary
     model.summary()
 
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=EPOCHS,
-                        verbose=1)
+                        verbose=1) 
     
     print("Finished Training Model!")
