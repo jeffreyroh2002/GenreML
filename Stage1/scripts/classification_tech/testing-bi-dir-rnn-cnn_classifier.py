@@ -2,7 +2,7 @@ import json
 import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-import tensorflow.keras as keras
+from tensorflow import keras
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -75,29 +75,30 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
-def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
-    cnn_model = keras.Sequential()
-    cnn_model.add(keras.layers.Conv1D(filters=64, kernel_size=3, strides=1, padding='same', input_shape=cnn_input_shape))
-    cnn_model.add(keras.layers.ReLU())
-    cnn_model.add(keras.layers.MaxPooling1D(pool_size=2, strides=2))
-    cnn_model.add(keras.layers.Conv1D(filters=128, kernel_size=3, strides=1, padding='same'))
-    cnn_model.add(keras.layers.ReLU())
-    cnn_model.add(keras.layers.MaxPooling1D(pool_size=2, strides=2))
-    cnn_model.add(keras.layers.Flatten())
-    cnn_model.add(keras.layers.Dense(128))
-    cnn_model.add(keras.layers.ReLU())
+def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size):
+    cnn_input = keras.Input(shape=cnn_input_shape)
+    rnn_input = keras.Input(shape=rnn_input_shape)
 
-    rnn_model = keras.Sequential()
-    rnn_model.add(keras.layers.LSTM(units=hidden_size, return_sequences=True, input_shape=rnn_input_shape))
-    rnn_model.add(keras.layers.LSTM(units=hidden_size))
-    rnn_model.add(keras.layers.Dense(128, activation='relu'))
-    rnn_model.add(keras.layers.Dropout(0.3))
+    cnn_model = keras.layers.Conv1D(filters=64, kernel_size=3, strides=1, padding='same')(cnn_input)
+    cnn_model = keras.layers.ReLU()(cnn_model)
+    cnn_model = keras.layers.MaxPooling1D(pool_size=2, strides=2)(cnn_model)
+    cnn_model = keras.layers.Conv1D(filters=128, kernel_size=3, strides=1, padding='same')(cnn_model)
+    cnn_model = keras.layers.ReLU()(cnn_model)
+    cnn_model = keras.layers.MaxPooling1D(pool_size=2, strides=2)(cnn_model)
+    cnn_model = keras.layers.Flatten()(cnn_model)
+    cnn_model = keras.layers.Dense(128)(cnn_model)
+    cnn_model = keras.layers.ReLU()(cnn_model)
 
-    combined_model = keras.Sequential()
-    combined_model.add(keras.layers.Concatenate([cnn_model, rnn_model]))
-    combined_model.add(keras.layers.Dense(num_classes, activation='softmax'))
+    rnn_model = keras.layers.LSTM(units=hidden_size, return_sequences=True)(rnn_input)
+    rnn_model = keras.layers.LSTM(units=hidden_size)(rnn_model)
+    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_model)
+    rnn_model = keras.layers.Dropout(0.3)(rnn_model)
 
-    return combined_model
+    combined = keras.layers.concatenate([cnn_model, rnn_model])
+    output = keras.layers.Dense(num_classes, activation='softmax')(combined)
+
+    model = keras.Model(inputs=[cnn_input, rnn_input], outputs=output)
+    return model
     
 
 if __name__ == "__main__":
@@ -114,8 +115,11 @@ if __name__ == "__main__":
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
     num_classes = 9  # Number of music genres
 
+    # Define the hidden size for LSTM layers
+    hidden_size = 64
+
     # Create the combined model
-    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
+    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size)
     
     optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
