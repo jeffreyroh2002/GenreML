@@ -24,7 +24,7 @@ L_PLOT_NAME = 'loss.png'
 
 # Hyperparameters
 LEARNING_RATE = 0.0001
-EPOCHS = 100
+EPOCHS = 50
 
 ####################################
 
@@ -89,8 +89,8 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_
     cnn_model = keras.layers.Dense(128)(cnn_model)
     cnn_model = keras.layers.ReLU()(cnn_model)
 
-    rnn_model = keras.layers.LSTM(units=hidden_size, return_sequences=True)(rnn_input)
-    rnn_model = keras.layers.LSTM(units=hidden_size)(rnn_model)
+    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(units=hidden_size, return_sequences=True))(rnn_input)
+    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(units=hidden_size))(rnn_model)
     rnn_model = keras.layers.Dense(128, activation='relu')(rnn_model)
     rnn_model = keras.layers.Dropout(0.3)(rnn_model)
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
     num_classes = 9  # Number of music genres
 
-    # Define the hidden size for LSTM layers
+    # Define the hidden size for GRU layers
     hidden_size = 64
 
     # Create the combined model
