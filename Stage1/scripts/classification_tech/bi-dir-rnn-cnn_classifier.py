@@ -17,7 +17,7 @@ SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0706-100epochs"
+NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0708-50epochs"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -88,7 +88,7 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     plt.close()
     print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
 
-def prepare_datasets(test_size, validation_size):
+def prepare_cnn_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
 
@@ -96,22 +96,22 @@ def prepare_datasets(test_size, validation_size):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
-    #NEED TO FIGURE OUT A WAY TO ADD 3D DIMENSION FOR CNN
     
-    """
     # add an axis to input sets (CNN requires 3D array)
     X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
-    """
+
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
     
-    # Print the shape and dimensions of the input data
-    print("X_train shape:", X_train.shape)    
-    print("X_validation shape:", X_validation.shape)
-    print("X_test shape:", X_test.shape)
-    print("y_train shape:", y_train.shape)
-    print("y_validation shape:", y_validation.shape)
-    print("y_test shape:", y_test.shape)
+def prepare_rnn_datasets(test_size, validation_size):
+
+    # load data
+    X, y, label_list = load_data(DATA_PATH)
+
+    # create train, validation, and test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
@@ -177,15 +177,16 @@ def predict(model, X, y):
     
 if __name__ == "__main__":
     # create train, val, test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
+    cnn_X_train, cnn_X_validation, cnn_X_test, cnn_y_train, cnn_y_validation, cnn_y_test, cnn_label_list = prepare_cnn_datasets(0.25, 0.2)
+    rnn_X_train, rnn_X_validation, rnn_X_test, rnn_y_train, rnn_y_validation, rnn_y_test, rnn_label_list = prepare_rnn_datasets(0.25, 0.2)
 
     # Set random seed for reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    cnn_input_shape = (X_train.shape[1], X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
-    rnn_input_shape = (X_train.shape[1], X_train.shape[2])
+    cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
+    rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
     
     num_classes = 9  # Number of music genres
     
@@ -203,14 +204,14 @@ if __name__ == "__main__":
     model.summary()
 
     # Train the model
-    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=EPOCHS,
-                        verbose=1)
+    history = model.fit([cnn_X_train, rnn_X_train], cnn_y_train, validation_data=([cnn_X_validation, rnn_X_validation], cnn_y_validation),
+                        batch_size=32, epochs=EPOCHS, verbose=1)
     
     print("Finished Training Model!")
 
-    """
+    
     # Print validation loss and accuracy
-    val_loss, val_acc = model.evaluate(X_validation, y_validation)
+    val_loss, val_acc = model.evaluate(cnn_X_validation, cnn_y_validation)
     print("Validation Loss:", val_loss)
     print("Validation Accuracy:", val_acc)
 
@@ -218,12 +219,12 @@ if __name__ == "__main__":
     save_plot(history)
 
     # Evaluate model on test set
-    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
+    test_loss, test_acc = model.evaluate(cnn_X_test, cnn_y_test, verbose=2)
     print('\nTest accuracy:', test_acc)
 
     # Pick a sample to predict from the test set
-    X_to_predict = X_test[10]
-    y_to_predict = y_test[10]
+    X_to_predict = cnn_X_test[10]
+    y_to_predict = cnn_y_test[10]
 
     # Predict sample
     #predict(model, X_to_predict, y_to_predict)
@@ -235,5 +236,4 @@ if __name__ == "__main__":
 
     # Output heatmap
     if SAVE_HM:
-        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME, label_list)
-    """
+        get_heatmap(model, cnn_X_test, cnn_y_test, NEWDIR_PATH, HM_NAME, label_list)
