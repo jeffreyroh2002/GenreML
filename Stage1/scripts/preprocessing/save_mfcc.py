@@ -4,8 +4,8 @@ import math
 import librosa
 
 
-DATASET_PATH = "../../audio_file/raw_imported/genres_original"
-JSON_FILE_NAME = "full_dataset0510.json"
+DATASET_PATH = "../../audio_file/raw_imported/GTZAN_30SongsEach/genres_original"
+JSON_FILE_NAME = "310genre_dataset.json"
 JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
 SAMPLE_RATE = 22050
