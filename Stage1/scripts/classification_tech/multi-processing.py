@@ -3,37 +3,17 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow import keras
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import os
 import multiprocessing
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
-SAVE_MODEL = True
-SAVE_HM = True
-
-#OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0706-100epochs"
-
-MODEL_NAME = "saved_model"
-HM_NAME = "heatmap.png"
-A_PLOT_NAME = 'accuracy.png'
-L_PLOT_NAME = 'loss.png'
+DATA_PATH = "../../audio_file/preprocessed/310genre_dataset.json"
 
 # Hyperparameters
 LEARNING_RATE = 0.0001
-EPOCHS = 100
+EPOCHS = 50
 
 ####################################
-
-#create new dir in results dir for results
-NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
-if not os.path.exists(NEWDIR_PATH):
-    os.makedirs(NEWDIR_PATH)
-
 def load_data(data_path):
     with open(data_path, "r") as fp:
         data = json.load(fp)
@@ -41,7 +21,7 @@ def load_data(data_path):
     # convert lists to numpy arrays
     X = np.array(data["mfcc"])
     y = np.array(data["labels"])
-    label_list = data.get("mapping", {})   #Jazz, Classical, etc
+    label_list = data.get("mapping", {})
 
     print(label_list)
 
@@ -57,16 +37,14 @@ def prepare_cnn_datasets(test_size, validation_size):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
-    
     # add an axis to input sets (CNN requires 3D array)
-    X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
+    X_train = X_train[..., np.newaxis]
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
-    
-def prepare_rnn_datasets(test_size, validation_size):
 
+def prepare_rnn_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
 
@@ -90,8 +68,8 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_
     cnn_model = keras.layers.Dense(128)(cnn_model)
     cnn_model = keras.layers.ReLU()(cnn_model)
 
-    rnn_model = keras.layers.LSTM(units=hidden_size, return_sequences=True)(rnn_input)
-    rnn_model = keras.layers.LSTM(units=hidden_size)(rnn_model)
+    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(units=hidden_size, return_sequences=True))(rnn_input)
+    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(units=hidden_size))(rnn_model)
     rnn_model = keras.layers.Dense(128, activation='relu')(rnn_model)
     rnn_model = keras.layers.Dropout(0.3)(rnn_model)
 
@@ -101,16 +79,17 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_
     model = keras.Model(inputs=[cnn_input, rnn_input], outputs=output)
     return model
 
-def train_model(model, cnn_X_train, rnn_X_train, cnn_y_train, cnn_X_validation, rnn_X_validation, cnn_y_validation):
-    # Compile the model
-    model.compile(optimizer=optimiser,
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
+def train_cnn_model(cnn_model, cnn_X_train, cnn_X_validation, cnn_y_train, cnn_y_validation):
+    optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    cnn_model.compile(optimizer=optimiser, loss='categorical_crossentropy', metrics=['accuracy'])
+    cnn_model.fit(cnn_X_train, cnn_y_train, validation_data=(cnn_X_validation, cnn_y_validation),
+                  batch_size=32, epochs=EPOCHS, verbose=1)
 
-    # Train the model
-    model.fit([cnn_X_train, rnn_X_train], cnn_y_train, validation_data=([cnn_X_validation, rnn_X_validation], cnn_y_validation),
-              batch_size=32, epochs=EPOCHS, verbose=1)
-    
+def train_rnn_model(rnn_model, rnn_X_train, rnn_X_validation, rnn_y_train, rnn_y_validation):
+    optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    rnn_model.compile(optimizer=optimiser, loss='categorical_crossentropy', metrics=['accuracy'])
+    rnn_model.fit(rnn_X_train, rnn_y_train, validation_data=(rnn_X_validation, rnn_y_validation),
+                  batch_size=32, epochs=EPOCHS, verbose=1)
 
 if __name__ == "__main__":
     # create train, val, test sets
@@ -122,28 +101,31 @@ if __name__ == "__main__":
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
+    cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    num_classes = 9  # Number of music genres
+    num_classes = 10
 
-    # Define the hidden size for LSTM layers
+    print("CNN input shape:", cnn_input_shape)
+    print("RNN input shape:", rnn_input_shape)
+    print("X_train shape:", cnn_X_train.shape)
+
+    # Define the hidden size for GRU layers
     hidden_size = 64
 
-    # Create the combined model
-    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size)
-    
-    optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
+    # Create the CNN and RNN models
+    cnn_model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size)
+    rnn_model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size)
 
-    # Compile the model
-    model.compile(optimizer=optimiser,
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
+    # Create separate processes for trainingthe CNN and RNN models
+    cnn_process = multiprocessing.Process(target=train_cnn_model, args=(cnn_model, cnn_X_train, cnn_X_validation, cnn_y_train, cnn_y_validation))
+    rnn_process = multiprocessing.Process(target=train_rnn_model, args=(rnn_model, rnn_X_train, rnn_X_validation, rnn_y_train, rnn_y_validation))
 
-    # Print the model summary
-    model.summary()
+    # Start the processes
+    cnn_process.start()
+    rnn_process.start()
 
-    # Train the model
-    history = model.fit([cnn_X_train, rnn_X_train], cnn_y_train, validation_data=([cnn_X_validation, rnn_X_validation], cnn_y_validation),
-                        batch_size=32, epochs=EPOCHS, verbose=1)
-    
-    print("Finished Training Model!")
+    # Wait for the processes to finish
+    cnn_process.join()
+    rnn_process.join()
+
+    print("Finished Training Models!")
