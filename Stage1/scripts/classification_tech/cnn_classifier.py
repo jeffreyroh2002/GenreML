@@ -11,12 +11,12 @@ import os
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../audio_file/preprocessed/valence_wav.json"
 SAVE_MODEL = False
 SAVE_HM = False
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "cnn-0514-testing"
+NEWDIR_NAME = "valence_wav_cnn"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -72,7 +72,7 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name):
     prediction = model.predict(X_test)
     y_pred = np.argmax(prediction, axis=1)
     #cm = confusion_matrix(y_test, y_pred)
-        
+
     labels = unique_labels(y_test)
     column = [f'Predicted {label}' for label in labels]
     indices = [f'Actual {label}' for label in labels]
@@ -129,7 +129,7 @@ def build_model(input_shape):
     model.add(keras.layers.Dropout(0.3))
 
     # output layer
-    model.add(keras.layers.Dense(10, activation='softmax'))
+    model.add(keras.layers.Dense(2, activation='softmax'))
 
     return model
 
