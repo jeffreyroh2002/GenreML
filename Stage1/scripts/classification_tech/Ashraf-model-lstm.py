@@ -75,12 +75,6 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
-def conv_block(inputs, filters, kernel_size):
-    x = layers.Conv1D(filters, kernel_size, activation='relu', padding='same')(inputs)
-    x = layers.Dropout(0.25)(x)
-    x = layers.MaxPooling1D(pool_size=2)(x)
-    return x
-
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_input = keras.Input(shape=cnn_input_shape)
     rnn_input = keras.Input(shape=rnn_input_shape)
