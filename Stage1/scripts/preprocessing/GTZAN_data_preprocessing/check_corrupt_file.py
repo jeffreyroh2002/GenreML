@@ -34,12 +34,12 @@ def pre_setting():
 
 def check_audio_file(audio_paths):
     # Create empty arrays to save the features
-    AllSpec = np.empty([1000, 1025, 1293])
-    AllMel = np.empty([1000, 128, 1293])
-    AllMfcc = np.empty([1000, 10, 1293])
-    AllZcr = np.empty([1000, 1293])
-    AllCen = np.empty([1000, 1293])
-    AllChroma = np.empty([1000, 12, 1293])
+    AllSpec = np.empty([310, 1025, 1293])
+    AllMel = np.empty([310, 128, 1293])
+    AllMfcc = np.empty([310, 10, 1293])
+    AllZcr = np.empty([310, 1293])
+    AllCen = np.empty([310, 1293])
+    AllChroma = np.empty([310, 12, 1293])
 
     print("2")
     count = 0
@@ -63,17 +63,17 @@ def check_audio_file(audio_paths):
             AllMfcc[i] = mfcc
 
             # Zero-crossing rate
-            zcr = librosa.feature.zero_crossing_rate(y)[0]
-            AllZcr[i] = zcr
+            # zcr = librosa.feature.zero_crossing_rate(y)[0]
+            # AllZcr[i] = zcr
 
-            # Spectral centroid
-            sp_cen = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
-            AllCen[i] = sp_cen
+            # # Spectral centroid
+            # sp_cen = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+            # AllCen[i] = sp_cen
 
-            # Chromagram
-            chroma_stft = librosa.feature.chroma_stft(
-                y=y, sr=sr, n_chroma=12, n_fft=4096)
-            AllChroma[i] = chroma_stft
+            # # Chromagram
+            # chroma_stft = librosa.feature.chroma_stft(
+            #     y=y, sr=sr, n_chroma=12, n_fft=4096)
+            # AllChroma[i] = chroma_stft
 
         except Exception as e:
             bad_index.append(i)
