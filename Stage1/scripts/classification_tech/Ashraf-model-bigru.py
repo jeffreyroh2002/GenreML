@@ -10,6 +10,9 @@ import os
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
+
+#OUTPUT DIR/FILE NAMES
+NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0706-100epochs"
 DATA_PATH = "../../audio_file/preprocessed/valence_wav.json"
 SAVE_MODEL = False
 SAVE_HM = False
@@ -75,6 +78,7 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
+
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_input = keras.Input(shape=cnn_input_shape)
     rnn_input = keras.Input(shape=rnn_input_shape)
@@ -125,7 +129,7 @@ if __name__ == "__main__":
     # Define the input shapes and number of classes
     cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    num_classes = 2  # Number of music genres
+
 
     # Create the combined model
     model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)

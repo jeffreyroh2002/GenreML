@@ -75,6 +75,7 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
+
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_input = keras.Input(shape=cnn_input_shape)
     rnn_input = keras.Input(shape=rnn_input_shape)
