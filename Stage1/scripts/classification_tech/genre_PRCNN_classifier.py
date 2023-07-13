@@ -1,33 +1,3 @@
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
-
-
-
-def Parallel_CNN_RNN():
-    input = keras.layers.Input(shape=(128,513))
-    C_layer1 = keras.layers.Conv2D(filters=16, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(input)
-    C_layer2 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer1)
-    C_layer3 = keras.layers.Conv2D(filters=32, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer2)
-    C_layer4 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer3)
-    C_layer5 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer4)
-    C_layer6 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer5)
-    C_layer7 = keras.layers.Conv2D(filters=128, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer6)
-    C_layer8 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer7)
-    C_layer9 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer8)
-    C_layer10 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer9)
-    
-    R_layer1 = keras.layers.MaxPooling2D(pool_size=(1,2), strides=(1,2))(input)
-    R_layer2 = keras.layers.Embedding(input_dim=256, output_dim=128)(R_layer1)
-    R_layer3 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer2)
-    R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer3)
-    
-    concat = tf.layers.concatenate([C_layer10, R_layer4], axis=1)
-    output = keras.layers.Dense(10, activation='softmax')(concat)
-    
-    model = keras.Model(inputs=[input], outputs=[output])
-    
-                                         
 import json
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -42,12 +12,12 @@ import os
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../audio_file/preprocessed/STFT_GTZAN_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0708-50epochs"
+NEWDIR_NAME = "genre_PRCNN-0713"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -70,7 +40,7 @@ def load_data(data_path):
         data = json.load(fp)
 
     # convert lists to numpy arrays
-    X = np.array(data["mfcc"])
+    X = np.array(data["stft"])
     y = np.array(data["labels"])
     label_list = data.get("mapping", {})   #Jazz, Classical, etc
 
@@ -118,7 +88,24 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     plt.close()
     print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
 
-def prepare_cnn_datasets(test_size, validation_size):
+# def prepare_cnn_datasets(test_size, validation_size):
+#     # load data
+#     X, y, label_list = load_data(DATA_PATH)
+
+#     # create train, validation, and test split
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+#     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
+
+    
+#     # add an axis to input sets (CNN requires 3D array)
+#     X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
+#     X_validation = X_validation[..., np.newaxis]
+#     X_test = X_test[..., np.newaxis]
+
+#     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
+    
+def prepare_datasets(test_size, validation_size):
+
     # load data
     X, y, label_list = load_data(DATA_PATH)
 
@@ -126,26 +113,32 @@ def prepare_cnn_datasets(test_size, validation_size):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
-    
-    # add an axis to input sets (CNN requires 3D array)
-    X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
-    X_validation = X_validation[..., np.newaxis]
-    X_test = X_test[..., np.newaxis]
-
-    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
-    
-def prepare_rnn_datasets(test_size, validation_size):
-
-    # load data
-    X, y, label_list = load_data(DATA_PATH)
-
-    # create train, validation, and test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
-    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
-
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
-def create_combined_model(input_shape, num_classes):
+# def create_combined_model(input_shape, num_classes):
+#     input = keras.layers.Input(shape=input_shape)
+#     C_layer1 = keras.layers.Conv2D(filters=16, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(input)
+#     C_layer2 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer1)
+#     C_layer3 = keras.layers.Conv2D(filters=32, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer2)
+#     C_layer4 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer3)
+#     C_layer5 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer4)
+#     C_layer6 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer5)
+#     C_layer7 = keras.layers.Conv2D(filters=128, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer6)
+#     C_layer8 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer7)
+#     C_layer9 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer8)
+#     C_layer10 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer9)
+    
+#     R_layer1 = keras.layers.MaxPooling2D(pool_size=(1,2), strides=(1,2))(input)
+#     R_layer2 = keras.layers.Embedding(input_dim=256, output_dim=128)(R_layer1)
+#     R_layer3 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer2)
+#     R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer3)
+    
+#     concat = tf.layers.concatenate([C_layer10, R_layer4], axis=1)
+#     output = keras.layers.Dense(10, activation='softmax')(concat)
+    
+#     model = keras.Model(inputs=[input], outputs=[output])
+    
+def Parallel_CNN_RNN(input_shape):
     input = keras.layers.Input(shape=input_shape)
     C_layer1 = keras.layers.Conv2D(filters=16, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(input)
     C_layer2 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer1)
@@ -168,7 +161,6 @@ def create_combined_model(input_shape, num_classes):
     
     model = keras.Model(inputs=[input], outputs=[output])
     
-
     
 """
 def create_cnn(input_shape):
@@ -233,24 +225,24 @@ def predict(model, X, y):
     
 if __name__ == "__main__":
     # create train, val, test sets
-    cnn_X_train, cnn_X_validation, cnn_X_test, cnn_y_train, cnn_y_validation, cnn_y_test, cnn_label_list = prepare_cnn_datasets(0.25, 0.2)
-    rnn_X_train, rnn_X_validation, rnn_X_test, rnn_y_train, rnn_y_validation, rnn_y_test, rnn_label_list = prepare_rnn_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_cnn_datasets(0.25, 0.2)
+    # rnn_X_train, rnn_X_validation, rnn_X_test, rnn_y_train, rnn_y_validation, rnn_y_test, rnn_label_list = prepare_rnn_datasets(0.25, 0.2)
 
     # Set random seed for reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
-    rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
+    # cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
+    input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
     
-    # Define the hidden size for LSTM layers
-    hidden_size = 64
+    # # Define the hidden size for LSTM layers
+    # hidden_size = 64
     
-    num_classes = 9  # Number of music genres
+    num_classes = 10  # Number of music genres
     
     # Create the combined model
-    model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes, hidden_size)
+    model = Parallel_CNN_RNN(input_shape)
 
     optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
 
@@ -263,14 +255,14 @@ if __name__ == "__main__":
     model.summary()
 
     # Train the model
-    history = model.fit([cnn_X_train, rnn_X_train], cnn_y_train, validation_data=([cnn_X_validation, rnn_X_validation], cnn_y_validation),
+    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
                         batch_size=32, epochs=EPOCHS, verbose=1)
     
     print("Finished Training Model!")
 
     
     # Print validation loss and accuracy
-    val_loss, val_acc = model.evaluate(cnn_X_validation, cnn_y_validation)
+    val_loss, val_acc = model.evaluate(X_validation, y_validation)
     print("Validation Loss:", val_loss)
     print("Validation Accuracy:", val_acc)
 
@@ -278,12 +270,12 @@ if __name__ == "__main__":
     save_plot(history)
 
     # Evaluate model on test set
-    test_loss, test_acc = model.evaluate(cnn_X_test, cnn_y_test, verbose=2)
+    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
     print('\nTest accuracy:', test_acc)
 
-    # Pick a sample to predict from the test set
-    X_to_predict = cnn_X_test[10]
-    y_to_predict = cnn_y_test[10]
+    # # Pick a sample to predict from the test set
+    # X_to_predict = cnn_X_test[10]
+    # y_to_predict = cnn_y_test[10]
 
     # Predict sample
     #predict(model, X_to_predict, y_to_predict)
@@ -295,4 +287,4 @@ if __name__ == "__main__":
 
     # Output heatmap
     if SAVE_HM:
-        get_heatmap(model, cnn_X_test, cnn_y_test, NEWDIR_PATH, HM_NAME, label_list)
+        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME, label_list)
