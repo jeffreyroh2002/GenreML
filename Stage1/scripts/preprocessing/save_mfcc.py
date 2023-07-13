@@ -4,12 +4,13 @@ import math
 import librosa
 
 
-DATASET_PATH = "../../audio_file/raw_imported/GTZAN_30SongsEach/genres_original"
-JSON_FILE_NAME = "310genre_dataset.json"
+
+DATASET_PATH = "../../audio_file/raw_imported/valence_wav"
+JSON_FILE_NAME = "valence_wav.json"
 JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
 SAMPLE_RATE = 22050
-DURATION = 30 # measured in seconds for GTZAN Dataset
+DURATION = 10 # measured in seconds for GTZAN Dataset
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
 
 def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_segments=5):
@@ -67,5 +68,5 @@ def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, nu
 
         
 if __name__ == "__main__":
-    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=10)
+    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=4)
 	
