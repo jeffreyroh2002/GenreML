@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from sklearn.metrics import confusion_matrix
 
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
@@ -25,6 +26,8 @@ HM_NAME = "heatmap.png"
 #Accuracy and Loss Graph Names
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
+
+EPOCHS = 50
 
 def load_data(data_path):
 
@@ -79,7 +82,8 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
+    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=EPOCHS, verbose=1)
+
     print("Finished Training Model!")
     
     #printing val loss and accuracy
