@@ -8,17 +8,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
-from sklearn.metrics import confusion_matrix
 
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
-NEWDIR_NAME = "0514-testing"
-
-#create new directory in results if model or hm is saved
-if SAVE_MODEL or SAVE_HM:
-    NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
