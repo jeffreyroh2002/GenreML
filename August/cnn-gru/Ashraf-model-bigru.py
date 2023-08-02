@@ -10,13 +10,15 @@ import os
 from sklearn.metrics import confusion_matrix
 
 ####EDIT BEFORE RUNNING ###########
+NUM_CLASSES = 10
+
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/valence_wav.json"
-SAVE_MODEL = False
-SAVE_HM = False
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
+SAVE_MODEL = True
+SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "valence_wav"
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     # Define the input shapes and number of classes
     cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    num_classes = 2  # Number of music genres
+    num_classes = NUM_CLASSES  # Number of music genres
 
     # Create the combined model
     model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
@@ -148,8 +150,9 @@ if __name__ == "__main__":
     print("Finished Training Model!")
     
     # Print validation loss and accuracy
-    print("Validation Loss:", val_loss)
-    print("Validation Accuracy:", val_acc)
+    val_loss, val_acc = model.evaluate(X_test, y_test)
+    print("Valdiation Loss: ", val_loss)
+    print("Valdiation Accuracy: ", val_acc)
 
     # Plot history
     save_plot(history)

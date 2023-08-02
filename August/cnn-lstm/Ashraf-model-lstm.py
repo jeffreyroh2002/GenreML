@@ -14,8 +14,8 @@ NUM_CLASSES = 10
 
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
-SAVE_MODEL = False
-SAVE_HM = False
+SAVE_MODEL = True
+SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
 NEWDIR_PATH = "genre"
@@ -188,8 +188,9 @@ if __name__ == "__main__":
     print("Finished Training Model!")
 
     # Print validation loss and accuracy
-    print("Validation Loss:", val_loss)
-    print("Validation Accuracy:", val_acc)
+    val_loss, val_acc = model.evaluate(X_test, y_test)
+    print("Valdiation Loss: ", val_loss)
+    print("Valdiation Accuracy: ", val_acc)
 
     # Plot history
     save_plot(history)
