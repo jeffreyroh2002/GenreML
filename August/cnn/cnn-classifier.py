@@ -10,22 +10,29 @@ import matplotlib.pyplot as plt
 import os
 
 ####EDIT BEFORE RUNNING ###########
+NUM_CLASSES = 10
+
 # path to json file that stores MFCCs and genre labels for each processed segment
 DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
-SAVE_MODEL = False
-SAVE_HM = False
+SAVE_MODEL = True
+SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre"
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
 
+# Hyperparameters
+LEARNING_RATE = 0.0001
+EPOCHS = 50
+
 #create new dr in results dir for results
-if not os.path.exists(NEWDIR_NAME):
-    os.makedirs(NEWDIR_NAME)
+NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+if not os.path.exists(NEWDIR_PATH):
+    os.makedirs(NEWDIR_PATH)
 
 ####################################
 
@@ -129,7 +136,7 @@ def build_model(input_shape):
     model.add(keras.layers.Dropout(0.3))
 
     # output layer
-    model.add(keras.layers.Dense(2, activation='softmax'))
+    model.add(keras.layers.Dense(NUM_CLASSES, activation='softmax'))
 
     return model
 
@@ -163,7 +170,7 @@ if __name__ == "__main__":
     model = build_model(input_shape)
     
         # compile model
-    optimiser = keras.optimizers.Adam(learning_rate=0.0001)
+    optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
     model.compile(optimizer=optimiser,
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
@@ -171,7 +178,7 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=150, verbose=1)
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=EPOCHS, verbose=1)
     print("Finished Training Model!")
     
     #printing val loss and accuracy
