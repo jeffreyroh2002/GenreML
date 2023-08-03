@@ -27,7 +27,7 @@ L_PLOT_NAME = 'loss.png'
 
 # Hyperparameters
 LEARNING_RATE = 0.0001
-EPOCHS = 50
+EPOCHS = 100
 
 #create new dr in results dir for results
 if not os.path.exists(NEWDIR_PATH):
@@ -98,7 +98,7 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
 def prepare_datasets(test_size, validation_size):
     
     # load data
-    X, y = load_data(DATA_PATH)
+    X, y, label_list = load_data(DATA_PATH)
     
     # create train, validation and test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
@@ -109,7 +109,7 @@ def prepare_datasets(test_size, validation_size):
     X_validation = X_validation[..., np.newaxis]
     X_test = X_test[..., np.newaxis]
     
-    return X_train, X_validation, X_test, y_train, y_validation, y_test
+    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
     
 def build_model(input_shape):
     """Generates CNN model
@@ -169,13 +169,13 @@ def predict(model, X, y):
 if __name__ == "__main__":
 
     #create train, val, test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test = prepare_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
 
     # create networ
     input_shape = (X_train.shape[1], X_train.shape[2], 1)
     model = build_model(input_shape)
     
-        # compile model
+    # compile model
     optimiser = keras.optimizers.Adam(learning_rate=LEARNING_RATE)
     model.compile(optimizer=optimiser,
                   loss='sparse_categorical_crossentropy',
@@ -213,4 +213,4 @@ if __name__ == "__main__":
 
     # output heatmap
     if (SAVE_HM == True):
-        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME)
+        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME, label_list)
