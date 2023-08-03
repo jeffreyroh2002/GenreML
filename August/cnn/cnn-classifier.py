@@ -30,7 +30,6 @@ LEARNING_RATE = 0.0001
 EPOCHS = 50
 
 #create new dr in results dir for results
-NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
 if not os.path.exists(NEWDIR_PATH):
     os.makedirs(NEWDIR_PATH)
 
@@ -44,34 +43,39 @@ def load_data(data_path):
     # convert lists to numpy arrays
     X = np.array(data["mfcc"])
     y = np.array(data["labels"])
+    label_list = data.get("mapping", {})  # ['Anger', 'Fear', ...]
 
+    print(label_list)
     print("Data succesfully loaded!")
 
-    return  X, y
+    return  X, y, label_list
 
-def save_plot(history, newdir_path=NEWDIR_NAME, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
+def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
 
-    #Outputing graphs for Accuracy
+        # Outputting graphs for Accuracy
     plt.figure()
     plt.plot(history.history['accuracy'])
     plt.plot(history.history['val_accuracy'])
     plt.title('model train_accuracy vs val_accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
-    plt.legend(['train','val'], loc='upper left')
+    plt.legend(['train', 'val'], loc='upper left')
     plt.savefig(os.path.join(newdir_path, a_plot_name))
-        
-    #Outputing graphs for Loss
+    plt.close()
+
+    # Outputting graphs for Loss
     plt.figure()
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
     plt.title('model train_loss vs val_loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
-    plt.legend(['train','val'], loc='upper left')
+    plt.legend(['train', 'val'], loc='upper left')
     plt.savefig(os.path.join(newdir_path, l_plot_name))
+    plt.close()
+
     
-def get_heatmap(model, X_test, y_test, newdir_path, hm_name):
+def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     
     plt.figure()
     
@@ -80,15 +84,17 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name):
     y_pred = np.argmax(prediction, axis=1)
     #cm = confusion_matrix(y_test, y_pred)
 
-    labels = unique_labels(y_test)
+    labels = sorted(label_list)
     column = [f'Predicted {label}' for label in labels]
     indices = [f'Actual {label}' for label in labels]
     table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
-    hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
-        
-    plt.savefig(os.path.join(newdir_path, hm_name))
-    print("heatmap generated and saved in {path}".format(path=newdir_path))
+    plt.figure()
     
+    hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
+    plt.savefig(os.path.join(newdir_path, hm_name))
+    plt.close()
+    print("heatmap generated and saved in {path}".format(path=newdir_path))
+
 def prepare_datasets(test_size, validation_size):
     
     # load data
@@ -202,9 +208,9 @@ if __name__ == "__main__":
     
     # save model
     if (SAVE_MODEL == True):
-        model.save(os.path.join(NEWDIR_NAME, MODEL_NAME))
-        print("Model saved to disk at: ", os.path.join(NEWDIR_NAME, MODEL_NAME))
+        model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
+        print("Model saved to disk at: ", os.path.join(NEWDIR_PATH, MODEL_NAME))
 
     # output heatmap
     if (SAVE_HM == True):
-        get_heatmap(model, X_test, y_test, NEWDIR_NAME, HM_NAME)
+        get_heatmap(model, X_test, y_test, NEWDIR_PATH, HM_NAME)
