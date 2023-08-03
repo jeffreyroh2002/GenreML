@@ -51,6 +51,45 @@ def load_data(data_path):
 
     return X, y, label_list
 
+def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
+    # Outputting graphs for Accuracy
+    plt.figure()
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model train_accuracy vs val_accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.savefig(os.path.join(newdir_path, a_plot_name))
+    plt.close()
+
+    # Outputting graphs for Loss
+    plt.figure()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model train_loss vs val_loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.savefig(os.path.join(newdir_path, l_plot_name))
+    plt.close()
+
+def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
+    prediction = model.predict(X_test)
+    y_pred = np.argmax(prediction, axis=1)
+
+    labels = sorted(label_list)  # Sort the labels
+    column = [f'Predicted {label}' for label in labels]
+    indices = [f'Actual {label}' for label in labels]
+    table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
+
+    plt.figure()
+    hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
+    plt.savefig(os.path.join(newdir_path, hm_name))
+    plt.close()
+    print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
+    
+
 def prepare_cnn_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
