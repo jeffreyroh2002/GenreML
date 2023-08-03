@@ -7,15 +7,18 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from sklearn.metrics import confusion_matrix
 
 ####EDIT BEFORE RUNNING ###########
+NUM_CLASSES = 10
+
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0706-100epochs"
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -29,7 +32,7 @@ EPOCHS = 50
 ####################################
 
 #create new dir in results dir for results
-NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+
 if not os.path.exists(NEWDIR_PATH):
     os.makedirs(NEWDIR_PATH)
 
@@ -48,6 +51,44 @@ def load_data(data_path):
 
     return X, y, label_list
 
+def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
+    # Outputting graphs for Accuracy
+    plt.figure()
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('model train_accuracy vs val_accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.savefig(os.path.join(newdir_path, a_plot_name))
+    plt.close()
+
+    # Outputting graphs for Loss
+    plt.figure()
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model train_loss vs val_loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
+    plt.savefig(os.path.join(newdir_path, l_plot_name))
+    plt.close()
+
+def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
+    prediction = model.predict(X_test)
+    y_pred = np.argmax(prediction, axis=1)
+
+    labels = sorted(label_list)  # Sort the labels
+    column = [f'Predicted {label}' for label in labels]
+    indices = [f'Actual {label}' for label in labels]
+    table = pd.DataFrame(confusion_matrix(y_test, y_pred), columns=column, index=indices)
+
+    plt.figure()
+    hm = sns.heatmap(table, annot=True, fmt='d', cmap='viridis')
+    plt.savefig(os.path.join(newdir_path, hm_name))
+    plt.close()
+    print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
+    
 def prepare_cnn_datasets(test_size, validation_size):
     # load data
     X, y, label_list = load_data(DATA_PATH)
@@ -75,7 +116,6 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
-
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_input = keras.Input(shape=cnn_input_shape)
     rnn_input = keras.Input(shape=rnn_input_shape)
@@ -84,19 +124,19 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
 
@@ -126,7 +166,7 @@ if __name__ == "__main__":
     # Define the input shapes and number of classes
     cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    num_classes = 10  # Number of music genres
+    num_classes = NUM_CLASSES  # Number of music genres
 
     # Create the combined model
     model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
@@ -146,3 +186,31 @@ if __name__ == "__main__":
                         batch_size=32, epochs=EPOCHS, verbose=1)
     
     print("Finished Training Model!")
+
+    # Print validation loss and accuracy
+    val_loss, val_acc = model.evaluate(cnn_X_test, cnn_y_test)
+    print("Valdiation Loss: ", val_loss)
+    print("Valdiation Accuracy: ", val_acc)
+
+    # Plot history
+    save_plot(history)
+
+    # Evaluate model on test set
+    test_loss, test_acc = model.evaluate(cnn_X_test, cnn_y_test, verbose=2)
+    print('\nTest accuracy:', test_acc)
+
+    # Pick a sample to predict from the test set
+    X_to_predict = cnn_X_test[10]
+    y_to_predict = cnn_y_test[10]
+
+    # Predict sample
+    #predict(model, X_to_predict, y_to_predict)
+
+    # Save model
+    if SAVE_MODEL:
+        model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
+        print("Model saved to disk at:", os.path.join(NEWDIR_PATH, MODEL_NAME))
+
+    # Output heatmap
+    if SAVE_HM:
+        get_heatmap(model, cnn_X_test, cnn_y_test, NEWDIR_PATH, HM_NAME, cnn_label_list)

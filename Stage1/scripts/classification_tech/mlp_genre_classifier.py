@@ -10,14 +10,10 @@ import matplotlib.pyplot as plt
 import os
 
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
-NEWDIR_NAME = "0514-testing"
-
-#create new directory in results if model or hm is saved
-if SAVE_MODEL or SAVE_HM:
-    NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -25,6 +21,8 @@ HM_NAME = "heatmap.png"
 #Accuracy and Loss Graph Names
 A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
+
+EPOCHS = 50
 
 def load_data(data_path):
 
@@ -79,7 +77,8 @@ if __name__ == "__main__":
     model.summary()
 
     # train model
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=100, verbose=0)
+    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation), batch_size=32, epochs=EPOCHS, verbose=1)
+
     print("Finished Training Model!")
     
     #printing val loss and accuracy

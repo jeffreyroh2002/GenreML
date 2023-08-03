@@ -7,15 +7,18 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from sklearn.metrics import confusion_matrix
 
 ####EDIT BEFORE RUNNING ###########
+NUM_CLASSES = 10
+
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/full_dataset0510.json"
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_bi-dir-rnn-cnn-0706-100epochs"
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -75,7 +78,6 @@ def prepare_rnn_datasets(test_size, validation_size):
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
-
 def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_input = keras.Input(shape=cnn_input_shape)
     rnn_input = keras.Input(shape=rnn_input_shape)
@@ -84,29 +86,29 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     
-    cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_input)
+    cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
 
     cnn_model = keras.layers.Flatten()(cnn_model)
 
-    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_input)
+    rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_input)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_model)
+    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=True))(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.LSTM(64)(rnn_model)
+    rnn_model = keras.layers.GRU(64)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
 
     rnn_model = keras.layers.Flatten()(rnn_model)
@@ -126,7 +128,7 @@ if __name__ == "__main__":
     # Define the input shapes and number of classes
     cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
     rnn_input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    num_classes = 10  # Number of music genres
+    num_classes = NUM_CLASSES  # Number of music genres
 
     # Create the combined model
     model = create_combined_model(cnn_input_shape, rnn_input_shape, num_classes)
@@ -146,3 +148,32 @@ if __name__ == "__main__":
                         batch_size=32, epochs=EPOCHS, verbose=1)
     
     print("Finished Training Model!")
+    
+    # Print validation loss and accuracy
+    val_loss, val_acc = model.evaluate(cnn_X_test, cnn_y_test)
+    print("Valdiation Loss: ", val_loss)
+    print("Valdiation Accuracy: ", val_acc)
+
+    # Plot history
+    save_plot(history)
+
+    # Evaluate model on test set
+    test_loss, test_acc = model.evaluate(cnn_X_test, cnn_y_test, verbose=2)
+    print('\nTest accuracy:', test_acc)
+
+    # Pick a sample to predict from the test set
+    X_to_predict = cnn_X_test[10]
+    y_to_predict = cnn_y_test[10]
+
+    # Predict sample
+    #predict(model, X_to_predict, y_to_predict)
+
+    # Save model
+    if SAVE_MODEL:
+        model.save(os.path.join(NEWDIR_PATH, MODEL_NAME))
+        print("Model saved to disk at:", os.path.join(NEWDIR_PATH, MODEL_NAME))
+
+    # Output heatmap
+    if SAVE_HM:
+        get_heatmap(model, cnn_X_test, cnn_y_test, NEWDIR_PATH, HM_NAME, cnn_label_list)
+    
