@@ -188,7 +188,7 @@ if __name__ == "__main__":
     print("Finished Training Model!")
 
     # Print validation loss and accuracy
-    val_loss, val_acc = model.evaluate(X_test, y_test)
+    val_loss, val_acc = model.evaluate(cnn_X_test, cnn_y_test)
     print("Valdiation Loss: ", val_loss)
     print("Valdiation Accuracy: ", val_acc)
 
