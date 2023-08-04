@@ -2,7 +2,7 @@ from pydub import AudioSegment
 import os
 import random
 
-PATH = "/workspace/MusicML2/Stage1/audio_file/raw_imported/genres_original"
+PATH = "/workspace/MusicML2/Stage1/audio_file/raw_imported/GTZAN_30SongsEach_genres_original"
 OUT_PATH = "/workspace/MusicML2/Stage1/audio_file/raw_imported/GTZAN_3sec"
 
 
