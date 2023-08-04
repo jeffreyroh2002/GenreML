@@ -141,8 +141,10 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
 
     cnn_model = keras.layers.Flatten()(cnn_model)
+    
 
-    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_input)
+    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_input)
+    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)

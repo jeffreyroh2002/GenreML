@@ -31,8 +31,6 @@ EPOCHS = 50
 
 ####################################
 
-#create new dir in results dir for results
-NEWDIR_PATH = os.path.join("../../results", NEWDIR_NAME)
 if not os.path.exists(NEWDIR_PATH):
     os.makedirs(NEWDIR_PATH)
 
@@ -143,7 +141,8 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
 
     cnn_model = keras.layers.Flatten()(cnn_model)
 
-    rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_input)
+    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_input)
+    rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=True))(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
