@@ -9,15 +9,16 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+import pickle
 
 ####EDIT BEFORE RUNNING ###########
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../audio_file/preprocessed/STFT_GTZAN_dataset.json"
+DATA_PATH = "../../audio_file/preprocessed/STFT_GTZAN_dataset.txt"
 SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_NAME = "genre_PRCNN-0713"
+NEWDIR_NAME = "genre_PRCNN-0804"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -36,8 +37,8 @@ if not os.path.exists(NEWDIR_PATH):
     os.makedirs(NEWDIR_PATH)
 
 def load_data(data_path):
-    with open(data_path, "r") as fp:
-        data = json.load(fp)
+    with open(data_path, "rb") as fp:
+        data = pickle.load(fp)
 
     # convert lists to numpy arrays
     X = np.array(data["stft"])
@@ -99,7 +100,7 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     
 #     # add an axis to input sets (CNN requires 3D array)
 #     X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
-#     X_validation = X_validation[..., np.newaxis]
+    # X_validation = X_validation[..., np.newaxis]
 #     X_test = X_test[..., np.newaxis]
 
 #     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
@@ -140,27 +141,35 @@ def prepare_datasets(test_size, validation_size):
     
 def Parallel_CNN_RNN(input_shape):
     input = keras.layers.Input(shape=input_shape)
-    C_layer1 = keras.layers.Conv2D(filters=16, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(input)
+    
+    C_layer1 = keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(input)
     C_layer2 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer1)
-    C_layer3 = keras.layers.Conv2D(filters=32, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer2)
+    C_layer3 = keras.layers.Conv2D(filters=32, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(C_layer2)
     C_layer4 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer3)
-    C_layer5 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer4)
+    C_layer5 = keras.layers.Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(C_layer4)
     C_layer6 = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(C_layer5)
-    C_layer7 = keras.layers.Conv2D(filters=128, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer6)
+    C_layer7 = keras.layers.Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(C_layer6)
     C_layer8 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer7)
-    C_layer9 = keras.layers.Conv2D(filters=64, kernel_size=(3,1), strides=(1,1), activation='relu', padding='same')(C_layer8)
+    C_layer9 = keras.layers.Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(C_layer8)
     C_layer10 = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(C_layer9)
+    C_layer11 = keras.layers.Flatten()(C_layer10)
     
     R_layer1 = keras.layers.MaxPooling2D(pool_size=(1,2), strides=(1,2))(input)
-    R_layer2 = keras.layers.Embedding(input_dim=256, output_dim=128)(R_layer1)
-    R_layer3 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer2)
-    R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer3)
+    # R_layer2 = keras.layers.MaxPooling2D(pool_size=(1,2), strides=(1,2))(R_layer1)
+    R_layer2 = keras.layers.Reshape(target_shape=(128,256))(R_layer1)
+    # R_layer3 = keras.layers.Embedding(input_dim=256, output_dim=128, input_length=128)(R_layer2)
+    R_layer3 = keras.layers.Dense(128, activation='relu')(R_layer2)
+    # R_layer4 = keras.layers.Reshape(target_shape=(128, 128))(R_layer3)
+    # R_layer2 = keras.layers.Embedding(input_dim=256, output_dim=128)(R_layer1)
+    R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=False))(R_layer3)
+    # R_layer5 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer4)
     
-    concat = tf.layers.concatenate([C_layer10, R_layer4], axis=1)
+    concat = keras.layers.concatenate([C_layer11, R_layer4], axis=1)
     output = keras.layers.Dense(10, activation='softmax')(concat)
     
     model = keras.Model(inputs=[input], outputs=[output])
     
+    return model
     
 """
 def create_cnn(input_shape):
@@ -225,17 +234,19 @@ def predict(model, X, y):
     
 if __name__ == "__main__":
     # create train, val, test sets
-    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_cnn_datasets(0.25, 0.2)
-    # rnn_X_train, rnn_X_validation, rnn_X_test, rnn_y_train, rnn_y_validation, rnn_y_test, rnn_label_list = prepare_rnn_datasets(0.25, 0.2)
+    # X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
+    X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
+    # add an axis to input sets (CNN requires 3D array)
+    X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
+    X_validation = X_validation[..., np.newaxis]
+    X_test = X_test[..., np.newaxis]
 
     # Set random seed for reproducibility
     np.random.seed(42)
     tf.random.set_seed(42)
 
     # Define the input shapes and number of classes
-    # cnn_input_shape = (cnn_X_train.shape[1], cnn_X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
-    input_shape = (rnn_X_train.shape[1], rnn_X_train.shape[2])
-    
+    input_shape = (X_train.shape[1], X_train.shape[2], 1) # Assumes input audiofeatures of shape (num_timesteps, num_features)
     # # Define the hidden size for LSTM layers
     # hidden_size = 64
     
