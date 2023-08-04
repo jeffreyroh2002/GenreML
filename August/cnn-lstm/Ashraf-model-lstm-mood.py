@@ -10,15 +10,15 @@ import os
 from sklearn.metrics import confusion_matrix
 
 ####EDIT BEFORE RUNNING ###########
-NUM_CLASSES = 4
+NUM_CLASSES = 10
 
 # path to json file that stores MFCCs and genre labels for each processed segment
-DATA_PATH = "../../Stage1/audio_file/preprocessed/mood_less_labels.json"
+DATA_PATH = "../../Stage1/audio_file/preprocessed/310genre_dataset.json"
 SAVE_MODEL = True
 SAVE_HM = True
 
 #OUTPUT DIR/FILE NAMES
-NEWDIR_PATH = "mood"
+NEWDIR_PATH = "genre"
 
 MODEL_NAME = "saved_model"
 HM_NAME = "heatmap.png"
@@ -141,8 +141,10 @@ def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
 
     cnn_model = keras.layers.Flatten()(cnn_model)
+    
 
-    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_input)
+    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_input)
+    rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.LSTM(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
