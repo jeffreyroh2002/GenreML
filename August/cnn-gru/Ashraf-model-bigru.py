@@ -188,27 +188,22 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
     cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
     cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
     cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
     cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-
     cnn_model = keras.layers.Flatten()(cnn_model)
 
     rnn_model = keras.layers.Dense(128, activation='relu')(input)
@@ -221,7 +216,6 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     rnn_model = keras.layers.GRU(64)(rnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-
     rnn_model = keras.layers.Flatten()(rnn_model)
     
     combined = keras.layers.concatenate([cnn_model, rnn_model])
