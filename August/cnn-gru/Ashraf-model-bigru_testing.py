@@ -49,6 +49,13 @@ def load_data(data_path):
 
     return X, y, label_list
 
+def step_decay(epoch):
+    initial_lr = LEARNING_RATE
+    drop = 0.5
+    epochs_drop = 10
+    new_lr = initial_lr * np.power(drop, np.floor((1 + epoch) / epochs_drop))
+    return new_lr
+
 def save_plot(history, newdir_path=NEWDIR_PATH, a_plot_name=A_PLOT_NAME, l_plot_name=L_PLOT_NAME):
     # Outputting graphs for Accuracy
     plt.figure()
@@ -86,7 +93,7 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     plt.savefig(os.path.join(newdir_path, hm_name))
     plt.close()
     print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
-
+    
 def prepare_datasets(test_size, validation_size):
 
     # load data
@@ -159,13 +166,15 @@ if __name__ == "__main__":
     model.compile(optimizer=optimiser,
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
-
+    
     # Print the model summary
     model.summary()
 
+    # Drop-Based Learning Rate Schedule
+    lr_scheduler = keras.callbacks.LearningRateScheduler(step_decay)
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
-                        batch_size=32, epochs=EPOCHS, verbose=1)
+                        batch_size=32, epochs=EPOCHS, verbose=1, callbacks=[lr_scheduler])
     
     print("Finished Training Model!")
     
