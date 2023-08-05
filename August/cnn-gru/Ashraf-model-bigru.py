@@ -93,38 +93,6 @@ def get_heatmap(model, X_test, y_test, newdir_path, hm_name, label_list):
     plt.savefig(os.path.join(newdir_path, hm_name))
     plt.close()
     print("Heatmap generated and saved in {path}".format(path=NEWDIR_PATH))
-    
-    
-"""
-
-def prepare_cnn_datasets(test_size, validation_size):
-    # load data
-    X, y, label_list = load_data(DATA_PATH)
-
-    # create train, validation, and test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
-    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
-
-    
-    # add an axis to input sets (CNN requires 3D array)
-    X_train = X_train[..., np.newaxis]    #4d array -> (num_samples, 130, 13, 1)
-    X_validation = X_validation[..., np.newaxis]
-    X_test = X_test[..., np.newaxis]
-
-    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
-    
-def prepare_rnn_datasets(test_size, validation_size):
-
-    # load data
-    X, y, label_list = load_data(DATA_PATH)
-
-    # create train, validation, and test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
-    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
-
-    return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
-
-"""
 
 def prepare_datasets(test_size, validation_size):
 
@@ -136,50 +104,6 @@ def prepare_datasets(test_size, validation_size):
     X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=validation_size)
 
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
-
-"""
-def create_combined_model(cnn_input_shape, rnn_input_shape, num_classes):
-    cnn_input = keras.Input(shape=cnn_input_shape)
-    rnn_input = keras.Input(shape=rnn_input_shape)
-
-    cnn_model = keras.layers.Conv1D(32, 3, activation='relu', padding='same')(cnn_input)
-    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
-    cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
-    cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
-    cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-    
-    cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
-
-    cnn_model = keras.layers.Flatten()(cnn_model)
-
-    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_input)
-    rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=True))(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.GRU(64)(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-
-    rnn_model = keras.layers.Flatten()(rnn_model)
-    
-    combined = keras.layers.concatenate([cnn_model, rnn_model])
-    output = keras.layers.Dense(num_classes, activation='softmax')(combined)
-
-    model = keras.Model(inputs=[cnn_input, rnn_input], outputs=output)
-    return model
-"""    
 
 def Parallel_CNN_RNN(input_shape, num_classes):
     input = keras.layers.Input(shape=input_shape)
@@ -244,12 +168,18 @@ if __name__ == "__main__":
 
     # Print the model summary
     model.summary()
-
+    
+    """
     # Drop-Based Learning Rate Schedule
     lr_scheduler = keras.callbacks.LearningRateScheduler(step_decay)
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
                         batch_size=32, epochs=EPOCHS, verbose=1, callbacks=[lr_scheduler])
+    """
+    
+    # Train the model
+    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
+                        batch_size=32, epochs=EPOCHS, verbose=1)
     
     print("Finished Training Model!")
     
