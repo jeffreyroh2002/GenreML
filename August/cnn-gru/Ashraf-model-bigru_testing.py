@@ -107,7 +107,6 @@ def prepare_datasets(test_size, validation_size):
 
 def Parallel_CNN_RNN(input_shape, num_classes):
     input = keras.layers.Input(shape=input_shape)
-    
     cnn_model = keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(input)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
@@ -123,14 +122,20 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     cnn_model = keras.layers.Conv2D(filters=128, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(cnn_model)
-    cnn_model = keras.layers.Conv2D(filters=64, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(cnn_model)
+    
+    cnn_model = keras.layers.MaxPooling2D(pool_size=(2, 1), strides=(2, 1))(cnn_model)
+    cnn_model = keras.layers.Conv2D(filters=64, kernel_size=(3, 3), strides=(1, 1), activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
-    cnn_model = keras.layers.MaxPooling2D(pool_size=(4,4), strides=(4,4))(cnn_model)
+    cnn_model = keras.layers.MaxPooling2D(pool_size=(2, 1), strides=(2, 1))(cnn_model)
     cnn_model = keras.layers.Flatten()(cnn_model)
+    
+    # Reshape the CNN output to match the RNN input
+    #cnn_output_shape = (input_shape[0] // 16, input_shape[1] // 16, 64)  # Adjust these values based on your CNN architecture
+    #cnn_model_reshaped = keras.layers.Reshape(target_shape=cnn_output_shape)(cnn_model)
 
-    rnn_model = keras.layers.Dense(128, activation='relu')(cnn_model)
+    rnn_model = keras.layers.Reshape(target_shape=(1, cnn_model.shape[1]))(cnn_model)
+    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_model)
     rnn_model = keras.layers.BatchNormalization()(rnn_model)
     rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.BatchNormalization()(rnn_model)
@@ -154,7 +159,7 @@ if __name__ == "__main__":
     X_train, X_validation, X_test, y_train, y_validation, y_test, label_list = prepare_datasets(0.25, 0.2)
 
     # Define the input shapes and number of classes
-    input_shape = (X_train.shape[1], X_train.shape[2])  # Assumes input audio features of shape (num_timesteps, num_features)
+    input_shape = (X_train.shape[1], X_train.shape[2], 1)  # Assumes input audio features of shape (num_timesteps, num_features)
     num_classes = NUM_CLASSES  # Number of music genres
 
     # Create the combined model
