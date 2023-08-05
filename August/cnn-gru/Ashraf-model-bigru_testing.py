@@ -26,7 +26,7 @@ A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
 
 # Hyperparameters
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.1
 EPOCHS = 50
 
 ####################################
@@ -106,8 +106,8 @@ def prepare_datasets(test_size, validation_size):
     return X_train, X_validation, X_test, y_train, y_validation, y_test, label_list
 
 def Parallel_CNN_RNN(input_shape, num_classes):
-    input = keras.layers.Input(shape=input_shape)
-    cnn_model = keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(input)
+    input_layer = keras.layers.Input(shape=input_shape)
+    cnn_model = keras.layers.Conv2D(filters=16, kernel_size=(3,3), strides=(1,1), activation='relu', padding='same')(input_layer)
     cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling2D(pool_size=(2,2), strides=(2,2))(cnn_model)
@@ -129,13 +129,12 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling2D(pool_size=(2, 1), strides=(2, 1))(cnn_model)
     cnn_model = keras.layers.Flatten()(cnn_model)
-    
-    # Reshape the CNN output to match the RNN input
-    #cnn_output_shape = (input_shape[0] // 16, input_shape[1] // 16, 64)  # Adjust these values based on your CNN architecture
-    #cnn_model_reshaped = keras.layers.Reshape(target_shape=cnn_output_shape)(cnn_model)
+    cnn_output_shape = cnn_model.shape[1]  # Get the output shape of the CNN part --> review this part
 
-    rnn_model = keras.layers.Reshape(target_shape=(1, cnn_model.shape[1]))(cnn_model)
-    rnn_model = keras.layers.Dense(128, activation='relu')(rnn_model)
+    # Reshape the CNN output to match the RNN input --> review this part
+    cnn_model_reshaped = keras.layers.Reshape(target_shape=(8, cnn_output_shape // 8))(cnn_model)
+    
+    rnn_model = keras.layers.Dense(128, activation='relu')(cnn_model_reshaped)
     rnn_model = keras.layers.BatchNormalization()(rnn_model)
     rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.BatchNormalization()(rnn_model)
@@ -151,7 +150,7 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     combined = keras.layers.concatenate([cnn_model, rnn_model])
     output = keras.layers.Dense(num_classes, activation='softmax')(combined)
 
-    model = keras.Model(inputs=[input], outputs=[output])
+    model = keras.Model(inputs=[input_layer], outputs=[output])
     return model
 
 if __name__ == "__main__":
@@ -175,13 +174,19 @@ if __name__ == "__main__":
     # Print the model summary
     model.summary()
 
+    """
     # Drop-Based Learning Rate Schedule
     lr_scheduler = keras.callbacks.LearningRateScheduler(step_decay)
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
                         batch_size=32, epochs=EPOCHS, verbose=1, callbacks=[lr_scheduler])
+    """
     
     print("Finished Training Model!")
+    
+    # Train the model
+    history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
+                        batch_size=32, epochs=EPOCHS, verbose=1)
     
     # Print validation loss and accuracy
     val_loss, val_acc = model.evaluate(X_test, y_test)
