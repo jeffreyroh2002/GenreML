@@ -174,19 +174,19 @@ if __name__ == "__main__":
     # Print the model summary
     model.summary()
 
-    """
     # Drop-Based Learning Rate Schedule
     lr_scheduler = keras.callbacks.LearningRateScheduler(step_decay)
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
                         batch_size=32, epochs=EPOCHS, verbose=1, callbacks=[lr_scheduler])
-    """
     
     print("Finished Training Model!")
     
+    """
     # Train the model
     history = model.fit(X_train, y_train, validation_data=(X_validation, y_validation),
                         batch_size=32, epochs=EPOCHS, verbose=1)
+    """
     
     # Print validation loss and accuracy
     val_loss, val_acc = model.evaluate(X_test, y_test)
