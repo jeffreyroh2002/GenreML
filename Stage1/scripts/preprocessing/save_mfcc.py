@@ -5,12 +5,12 @@ import librosa
 
 
 
-DATASET_PATH = "../../audio_file/raw_imported/valence_wav"
-JSON_FILE_NAME = "valence_wav.json"
+DATASET_PATH = "../../audio_file/raw_imported/GTZAN_30SongsEach/genres_original"
+JSON_FILE_NAME = "310genre_dataset.json"
 JSON_PATH = "../../audio_file/preprocessed/{}".format(JSON_FILE_NAME)
 
 SAMPLE_RATE = 22050
-DURATION = 10 # measured in seconds for GTZAN Dataset
+DURATION = 30 # measured in seconds for GTZAN Dataset
 SAMPLES_PER_TRACK = SAMPLE_RATE * DURATION
 
 def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, num_segments=5):
@@ -38,7 +38,8 @@ def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, nu
 			semantic_label = dirpath_components[-1]
 			data["mapping"].append(semantic_label)
 			print("\nProcessing {}".format(semantic_label))
-			
+			ii = 0
+            
 			#process files for specific genre
 			for f in filenames:
 
@@ -56,8 +57,10 @@ def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, nu
 													   n_mfcc = n_mfcc,
 													   hop_length=hop_length)
 					mfcc = mfcc.T
-
-					#store mfcc for segment if it has the expected length
+					if ii == 0:
+						print(mfcc.shape)
+						ii += 1
+                    #store mfcc for segment if it has the expected length
 					if len(mfcc) == expected_num_mfcc_vectors_per_segment:
 						data["mfcc"].append(mfcc.tolist())  #convert numpy array to list
 						data["labels"].append(i-1)
@@ -68,5 +71,5 @@ def save_mfcc(dataset_path, json_path, n_mfcc=13, n_fft=2048, hop_length=512, nu
 
         
 if __name__ == "__main__":
-    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=4)
+    save_mfcc(DATASET_PATH, JSON_PATH, num_segments=10)
 	

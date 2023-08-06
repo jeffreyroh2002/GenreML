@@ -26,7 +26,7 @@ A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
 
 # Hyperparameters
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.0001
 EPOCHS = 50
 
 ####################################
@@ -109,38 +109,44 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     input = keras.layers.Input(shape=input_shape)
     
     cnn_model = keras.layers.Conv1D(32, 3, activation='relu', padding='same')(input)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    # cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    # cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    # cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    # cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    # cnn_model = keras.layers.BatchNormalization()(cnn_model)
+    cnn_model = keras.layers.Dropout(0.25)(cnn_model)
+    cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
+    cnn_model = keras.layers.Conv1D(256, 11, activation='relu', padding='same')(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Flatten()(cnn_model)
 
     rnn_model = keras.layers.Dense(128, activation='relu')(input)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
-    rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=True))(rnn_model)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.GRU(64)(rnn_model)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
-    rnn_model = keras.layers.Dropout(0.25)(rnn_model)
-    rnn_model = keras.layers.Flatten()(rnn_model)
+    # rnn_model = keras.layers.BatchNormalization()(rnn_model)
+    #  R_layer2 = keras.layers.Reshape(target_shape=(130,13))(input)
+    # # R_layer3 = keras.layers.Embedding(input_dim=256, output_dim=128, input_length=128)(R_layer2)
+    # R_layer3 = keras.layers.Dense(128, activation='relu')(R_layer2)
+    # R_layer4 = keras.layers.Reshape(target_shape=(128, 128))(R_layer3)
+    # R_layer2 = keras.layers.Embedding(input_dim=256, output_dim=128)(R_layer1)
+    R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(256, return_sequences=True))(rnn_model)
+    # R_layer4 = keras.layers.BatchNormalization()(R_layer4)
+    R_layer4 = keras.layers.Dropout(0.5)(R_layer4)
+    R_layer4 = keras.layers.Bidirectional(keras.layers.GRU(256, return_sequences=False))(R_layer4)
+    # R_layer4 = keras.layers.BatchNormalization()(R_layer4)
+    rnn_model = keras.layers.Dropout(0.5)(R_layer4)
+    # R_layer5 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer4)
     
     combined = keras.layers.concatenate([cnn_model, rnn_model])
     output = keras.layers.Dense(num_classes, activation='softmax')(combined)
