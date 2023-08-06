@@ -26,7 +26,7 @@ A_PLOT_NAME = 'accuracy.png'
 L_PLOT_NAME = 'loss.png'
 
 # Hyperparameters
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.0001
 EPOCHS = 50
 
 ####################################
@@ -109,36 +109,28 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     input = keras.layers.Input(shape=input_shape)
     
     cnn_model = keras.layers.Conv1D(32, 3, activation='relu', padding='same')(input)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(64, 5, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(128, 7, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(256, 9, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(512, 11, activation='relu', padding='same')(cnn_model)
-    cnn_model = keras.layers.BatchNormalization()(cnn_model)
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Flatten()(cnn_model)
 
     rnn_model = keras.layers.Dense(128, activation='relu')(input)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
     rnn_model = keras.layers.GRU(128, return_sequences=True)(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.Bidirectional(keras.layers.GRU(128, return_sequences=True))(rnn_model)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.GRU(64)(rnn_model)
-    rnn_model = keras.layers.BatchNormalization()(rnn_model)
     rnn_model = keras.layers.Dropout(0.25)(rnn_model)
     rnn_model = keras.layers.Flatten()(rnn_model)
     
