@@ -129,6 +129,7 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Conv1D(256, 11, activation='relu', padding='same')(cnn_model)
+    
     cnn_model = keras.layers.Dropout(0.25)(cnn_model)
     cnn_model = keras.layers.MaxPooling1D(pool_size=2)(cnn_model)
     cnn_model = keras.layers.Flatten()(cnn_model)
@@ -147,6 +148,7 @@ def Parallel_CNN_RNN(input_shape, num_classes):
     # R_layer4 = keras.layers.BatchNormalization()(R_layer4)
     rnn_model = keras.layers.Dropout(0.5)(R_layer4)
     # R_layer5 = keras.layers.Bidirectional(keras.layers.GRU(256))(R_layer4)
+
     
     combined = keras.layers.concatenate([cnn_model, rnn_model])
     output = keras.layers.Dense(num_classes, activation='softmax')(combined)
